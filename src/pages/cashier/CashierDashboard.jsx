@@ -86,16 +86,25 @@ function BillModal({ table, onClose }) {
         scale: 2,
         backgroundColor: '#ffffff'
       });
-      const base64Image = canvas.toDataURL('image/png');
       
-      await fetch('/api/print', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64Image, ip: '192.168.1.6' })
-      });
-      console.log('Printed successfully');
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        const { canvasToEscPos, sendToPrinterTCP } = await import('../../utils/printerHelper');
+        const escPosData = canvasToEscPos(canvas);
+        await sendToPrinterTCP('192.168.1.6', escPosData);
+        console.log('Printed successfully via TCP');
+      } else {
+        const base64Image = canvas.toDataURL('image/png');
+        await fetch('/api/print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image, ip: '192.168.1.6' })
+        });
+        console.log('Printed successfully via API');
+      }
     } catch (err) {
       console.error('Print failed', err);
+      alert('فشل الطباعة: ' + err.message);
     }
   }
 
@@ -281,7 +290,7 @@ function InventoryTab() {
 // ─────────────────────────────────────────────
 function QRTab({ tables }) {
   const [selectedTable, setSelectedTable] = useState(null);
-  const baseUrl = window.location.origin;
+  const baseUrl = "https://mario-pos-2tzl.vercel.app";
 
   function generateQR(tableId) {
     const url = `${baseUrl}/table/${tableId}`;
