@@ -1,6 +1,6 @@
 // src/pages/cashier/CashierDashboard.jsx
 // Full cashier + admin dashboard: table map, bills, inventory, QR, takeaway, reports
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { QrCode, X, Printer, Check, ShoppingBag, LogOut, Settings } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useTables }              from '../../hooks/useTables';
