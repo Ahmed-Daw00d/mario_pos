@@ -1,9 +1,10 @@
 // src/contexts/CartContext.jsx — Shopping cart state management
 import { createContext, useContext, useReducer, useCallback } from 'react';
 import {
-  collection, doc, setDoc, updateDoc, serverTimestamp, increment
+  collection, doc, setDoc, updateDoc, serverTimestamp, increment, arrayUnion
 } from 'firebase/firestore';
 import { db } from '../firebase';
+
 
 const CartContext = createContext(null);
 
@@ -43,7 +44,6 @@ export function CartProvider({ children }) {
   async function submitOrder(sessionId, tableId, tableNumber) {
     if (cart.items.length === 0) return null;
 
-    const { arrayUnion: au } = await import('firebase/firestore');
     const orderRef  = doc(collection(db, 'orders'));
     const subtotal  = cartTotal;
     const orderData = {
@@ -64,7 +64,7 @@ export function CartProvider({ children }) {
 
     await updateDoc(doc(db, 'sessions', sessionId), {
       total_amount: increment(subtotal),
-      order_ids: au(orderRef.id),
+      order_ids: arrayUnion(orderRef.id),
     }).catch(() => {});
 
     clearCart();
@@ -75,7 +75,6 @@ export function CartProvider({ children }) {
   async function submitTakeawayOrder(sessionId, customerName, phone) {
     if (cart.items.length === 0) return null;
 
-    const { arrayUnion: au } = await import('firebase/firestore');
     const orderRef = doc(collection(db, 'orders'));
     const subtotal = cartTotal;
     const orderData = {
@@ -98,7 +97,7 @@ export function CartProvider({ children }) {
 
     await updateDoc(doc(db, 'sessions', sessionId), {
       total_amount: increment(subtotal),
-      order_ids:    au(orderRef.id),
+      order_ids:    arrayUnion(orderRef.id),
     }).catch(() => {});
 
     clearCart();

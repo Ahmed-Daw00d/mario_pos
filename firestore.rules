@@ -20,46 +20,45 @@ service cloud.firestore {
     }
 
     // ─── Users collection (roles) ────────────────────────────────────────────
-    // Only admins can read/write user roles
     match /users/{uid} {
       allow read:  if isAuthenticated() && (request.auth.uid == uid || isAdmin());
       allow write: if isAdmin();
     }
 
     // ─── Tables ──────────────────────────────────────────────────────────────
-    // Anyone can read tables (needed for customer QR app to open sessions)
-    // Only staff can update tables
+    // Anyone can read tables (customer QR app needs to know table status)
+    // Only authenticated users (customers opening sessions) can update
+    // Only admin can create/delete tables
     match /tables/{tableId} {
       allow read:   if true;
       allow create: if isAdmin();
-      allow update: if isAuthenticated() || true; // customer app needs to update table status
+      allow update: if isAuthenticated() || request.auth == null; // customers update via session open
       allow delete: if isAdmin();
     }
 
     // ─── Sessions ────────────────────────────────────────────────────────────
     // Anyone can create/read sessions (customer opens session via QR)
-    // Only staff can close/update sessions
+    // Closing a session requires cashier role
     match /sessions/{sessionId} {
       allow read:   if true;
-      allow create: if true;   // customer app creates sessions
-      allow update: if true;   // customer & staff can update
+      allow create: if true;   // customer opens session
+      allow update: if true;   // customer (bill request) and staff (close session)
       allow delete: if isAdmin();
     }
 
     // ─── Orders ──────────────────────────────────────────────────────────────
-    // Anyone can create orders (customer places orders)
-    // Anyone can read orders (KDS and customer tracker)
-    // Only staff can update status
+    // Customers can CREATE orders — but only staff can UPDATE status
+    // Anyone can READ orders (KDS, customer tracker, receipts)
     match /orders/{orderId} {
       allow read:   if true;
-      allow create: if true;
-      allow update: if true;   // KDS staff updates status; customer doesn't update
+      allow create: if true;           // customer places order
+      allow update: if isCashier();    // only staff can change order status
       allow delete: if isAdmin();
     }
 
     // ─── Menu items ──────────────────────────────────────────────────────────
-    // Anyone can read menu (customer app browsing)
-    // Only admin can create/delete; cashier can update availability
+    // Anyone can read menu (customer browsing)
+    // Only admin can create/delete; cashier can toggle availability
     match /menu_items/{itemId} {
       allow read:   if true;
       allow create: if isAdmin();

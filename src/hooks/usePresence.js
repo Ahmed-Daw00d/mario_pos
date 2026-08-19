@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ref, onValue, onDisconnect, set, serverTimestamp, push } from 'firebase/database';
 import { rtdb } from '../firebase';
 
 export function usePresence(nodePath, data = {}) {
   const [isConnected, setIsConnected] = useState(false);
+  // Use a ref to hold the latest data to avoid re-subscribing on every render
+  const dataRef = useRef(data);
+  useEffect(() => { dataRef.current = data; });
 
   useEffect(() => {
     if (!nodePath) return;
@@ -20,7 +23,7 @@ export function usePresence(nodePath, data = {}) {
           set(myRef, {
             isOnline: true,
             lastSeen: serverTimestamp(),
-            ...data
+            ...dataRef.current
           });
         });
       } else {
@@ -33,7 +36,7 @@ export function usePresence(nodePath, data = {}) {
       // On unmount, manually clean up
       set(myRef, null);
     };
-  }, [nodePath, JSON.stringify(data)]);
+  }, [nodePath]); // Only re-subscribe when the path changes, not on every data update
 
   return isConnected;
 }

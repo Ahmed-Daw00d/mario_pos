@@ -4,18 +4,19 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
+// All secrets are loaded from .env.local (never committed to git)
 const firebaseConfig = {
-  apiKey: "AIzaSyCml_af3wFrhJH-pygfYLWyIVt5mhPWx8c",
-  authDomain: "casher-1fb4a.firebaseapp.com",
-  projectId: "casher-1fb4a",
-  storageBucket: "casher-1fb4a.firebasestorage.app",
-  messagingSenderId: "575674491188",
-  appId: "1:575674491188:web:34be71f443d8363d924561",
-  databaseURL: "https://casher-1fb4a-default-rtdb.firebaseio.com/"
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+  databaseURL:       import.meta.env.VITE_FIREBASE_DATABASE_URL,
 };
 
 const app = initializeApp(firebaseConfig);
-export const db  = getFirestore(app);
+export const db   = getFirestore(app);
 export const auth = getAuth(app);
 export const rtdb = getDatabase(app);
 export default app;

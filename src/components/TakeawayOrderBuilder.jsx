@@ -33,11 +33,7 @@ function TakeawayOrderBuilderInner({ session, onClose, onOrderPlaced }) {
     return [];
   }
 
-  // For fritti/bevande: add directly without customizer
-  function addSimpleItem(item) {
-    const { addItem } = require; // will be replaced below
-    void addItem; // suppress lint — we use useCart
-  }
+  // fritti/bevande are handled by AddSimpleItems component below
 
   async function handleSubmit() {
     if (!cart.items.length || !session?.id) return;

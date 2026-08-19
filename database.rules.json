@@ -1,0 +1,50 @@
+{
+  "rules": {
+    // ── Presence nodes (cashier / kds / tables) ──────────────────────────────
+    // Any authenticated user can write their own presence.
+    // Anyone can read presence (needed for cashier to see KDS status and vice versa).
+    "presence": {
+      ".read": true,
+      "cashier": {
+        ".write": "auth != null"
+      },
+      "kds": {
+        ".write": "auth != null"
+      },
+      "tables": {
+        "$tableId": {
+          // Customer (unauthenticated) can write their own table presence
+          ".write": true,
+          ".read": true
+        }
+      }
+    },
+
+    // ── Ping nodes (cashier ↔ KDS call bell) ────────────────────────────────
+    // Authenticated users can send pings; anyone can read them.
+    "pings": {
+      ".read": "auth != null",
+      "$target": {
+        ".write": "auth != null"
+      }
+    },
+
+    // ── Order locks (prevent double-editing same bill) ───────────────────────
+    // Only authenticated cashiers can acquire/release locks.
+    "locks": {
+      ".read": "auth != null",
+      "orders": {
+        "$orderId": {
+          ".write": "auth != null",
+          ".read": "auth != null"
+        }
+      }
+    },
+
+    // ── Deny everything else ─────────────────────────────────────────────────
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
