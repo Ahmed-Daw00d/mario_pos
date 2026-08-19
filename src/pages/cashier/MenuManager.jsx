@@ -10,7 +10,7 @@ export function MenuManager() {
   const { tables, loading: tablesLoading } = useTables();
   const [activeSection, setActiveSection] = useState('tables');
 
-  if (menuLoading || tablesLoading) return <div className="text-white/40 text-center py-8">Caricamento in corso...</div>;
+  if (menuLoading || tablesLoading) return <div className="opacity-40 text-center py-8">Caricamento in corso...</div>;
 
   const sections = [
     { id: 'tables', label: 'Tavoli' },
@@ -20,10 +20,10 @@ export function MenuManager() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex gap-2 border-b border-white/10 pb-2 overflow-x-auto scrollbar-none">
+      <div className="flex gap-2 border-b border-border pb-2 overflow-x-auto scrollbar-none">
         {sections.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${activeSection === s.id ? 'bg-brand-red text-white' : 'text-white/50 hover:bg-white/10 hover:text-white'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${activeSection === s.id ? 'bg-brand-red text-white' : 'text-foreground opacity-50 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10'}`}>
             {s.label}
           </button>
         ))}
@@ -64,16 +64,16 @@ function TableManager({ tables }) {
 
   return (
     <div className="space-y-4">
-      <div className="card p-4 flex gap-2 items-end">
-        <div className="flex-1">
-          <label className="text-xs text-white/50 block mb-1">Numero Tavolo</label>
+      <div className="card p-4 flex gap-2 items-end flex-wrap sm:flex-nowrap">
+        <div className="flex-1 w-full sm:w-auto">
+          <label className="text-xs opacity-50 block mb-1">Numero Tavolo</label>
           <input type="number" value={newNum} onChange={e => setNewNum(e.target.value)} className="input-field py-2" placeholder="Es. 10" />
         </div>
-        <div className="flex-1">
-          <label className="text-xs text-white/50 block mb-1">Posti</label>
+        <div className="flex-1 w-full sm:w-auto">
+          <label className="text-xs opacity-50 block mb-1">Posti</label>
           <input type="number" value={newSeats} onChange={e => setNewSeats(e.target.value)} className="input-field py-2" placeholder="Es. 4" />
         </div>
-        <button onClick={handleAdd} disabled={submitting} className="btn-primary py-2 px-4 flex items-center gap-1">
+        <button onClick={handleAdd} disabled={submitting} className="btn-primary py-2 px-4 flex items-center justify-center gap-1 w-full sm:w-auto">
           <Plus size={16} /> Aggiungi
         </button>
       </div>
@@ -81,10 +81,10 @@ function TableManager({ tables }) {
         {tables.map(t => (
           <div key={t.id} className="card p-4 flex items-center justify-between">
             <div>
-              <p className="font-bold text-white text-lg">#{t.table_number}</p>
-              <p className="text-xs text-white/50">{t.seats} posti</p>
+              <p className="font-bold text-foreground text-lg">#{t.table_number}</p>
+              <p className="text-xs opacity-50">{t.seats} posti</p>
             </div>
-            <button onClick={() => handleDelete(t.id)} className="text-red-400 p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <button onClick={() => handleDelete(t.id)} className="text-red-500 dark:text-red-400 p-2 hover:bg-red-500/10 rounded-lg transition-colors">
               <Trash2 size={18} />
             </button>
           </div>
@@ -133,15 +133,15 @@ function IngredientManager({ ingredients }) {
       <button onClick={startNew} className="btn-ghost flex items-center gap-2"><Plus size={16} /> Nuovo Ingrediente</button>
       {editingId && (
         <div className="card p-4 border border-brand-red space-y-3">
-          <h3 className="font-bold text-white">{editingId === 'new' ? 'Nuovo Ingrediente' : 'Modifica Ingrediente'}</h3>
+          <h3 className="font-bold text-foreground">{editingId === 'new' ? 'Nuovo Ingrediente' : 'Modifica Ingrediente'}</h3>
           {editingId === 'new' && (
             <input type="text" placeholder="ID (es. cipolla)" className="input-field py-2" value={formData.id || ''} onChange={e => setFormData({...formData, id: e.target.value})} />
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input type="text" placeholder="Nome IT" className="input-field py-2 flex-1" value={formData.name_it || ''} onChange={e => setFormData({...formData, name_it: e.target.value})} />
-            <input type="text" placeholder="Nome AR" className="input-field py-2 flex-1 text-right" value={formData.name_ar || ''} onChange={e => setFormData({...formData, name_ar: e.target.value})} />
+            <input type="text" placeholder="Nome AR" className="input-field py-2 flex-1 sm:text-right" value={formData.name_ar || ''} onChange={e => setFormData({...formData, name_ar: e.target.value})} />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input type="number" placeholder="Prezzo Tonda" className="input-field py-2 flex-1" value={formData.price_tonda || ''} onChange={e => setFormData({...formData, price_tonda: parseFloat(e.target.value)})} />
             <input type="number" placeholder="Prezzo Teglia" className="input-field py-2 flex-1" value={formData.price_teglia || ''} onChange={e => setFormData({...formData, price_teglia: parseFloat(e.target.value)})} />
           </div>
@@ -156,12 +156,12 @@ function IngredientManager({ ingredients }) {
         {ingList.map(ing => (
           <div key={ing.id} className="card p-3 flex items-center justify-between">
             <div>
-              <p className="font-medium text-white">{ing.name_it} <span className="text-xs text-white/50">{ing.name_ar}</span></p>
+              <p className="font-medium text-foreground">{ing.name_it} <span className="text-xs opacity-50">{ing.name_ar}</span></p>
               <p className="text-xs text-brand-gold">Tonda: €{ing.price_tonda?.toFixed(2)} | Teglia: €{ing.price_teglia?.toFixed(2)}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => startEdit(ing)} className="p-2 text-white/50 hover:bg-white/10 rounded"><Edit2 size={16} /></button>
-              <button onClick={() => handleDelete(ing.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={16} /></button>
+              <button onClick={() => startEdit(ing)} className="p-2 opacity-50 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 rounded"><Edit2 size={16} /></button>
+              <button onClick={() => handleDelete(ing.id)} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={16} /></button>
             </div>
           </div>
         ))}
@@ -214,21 +214,21 @@ function MenuItemManager({ pizzas, fritti, bevande }) {
       <button onClick={startNew} className="btn-ghost flex items-center gap-2"><Plus size={16} /> Nuovo Prodotto</button>
       {editingId && (
         <div className="card p-4 border border-brand-red space-y-3">
-          <h3 className="font-bold text-white">{editingId === 'new' ? 'Nuovo Prodotto' : 'Modifica Prodotto'}</h3>
+          <h3 className="font-bold text-foreground">{editingId === 'new' ? 'Nuovo Prodotto' : 'Modifica Prodotto'}</h3>
           
-          <select className="input-field py-2 w-full bg-brand-dark" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+          <select className="input-field py-2 w-full bg-background" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
             <option value="pizza">Pizza</option>
             <option value="fritti">Fritti</option>
             <option value="bevande">Bevande</option>
           </select>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input type="text" placeholder="Nome IT" className="input-field py-2 flex-1" value={formData.name_it || ''} onChange={e => setFormData({...formData, name_it: e.target.value})} />
-            <input type="text" placeholder="Nome AR" className="input-field py-2 flex-1 text-right" value={formData.name_ar || ''} onChange={e => setFormData({...formData, name_ar: e.target.value})} />
+            <input type="text" placeholder="Nome AR" className="input-field py-2 flex-1 sm:text-right" value={formData.name_ar || ''} onChange={e => setFormData({...formData, name_ar: e.target.value})} />
           </div>
           
           {formData.category === 'pizza' ? (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input type="number" placeholder="Prezzo Tonda" className="input-field py-2 flex-1" value={formData.base_price_tonda || ''} onChange={e => setFormData({...formData, base_price_tonda: parseFloat(e.target.value)})} />
               <input type="number" placeholder="Prezzo Teglia" className="input-field py-2 flex-1" value={formData.base_price_teglia || ''} onChange={e => setFormData({...formData, base_price_teglia: parseFloat(e.target.value)})} />
             </div>
@@ -248,16 +248,16 @@ function MenuItemManager({ pizzas, fritti, bevande }) {
           <div key={item.id} className="card p-3 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase bg-white/10 px-1.5 py-0.5 rounded text-white/50">{item.category}</span>
-                <p className="font-medium text-white">{item.name_it}</p>
+                <span className="text-[10px] uppercase bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded opacity-60 font-bold">{item.category}</span>
+                <p className="font-medium text-foreground">{item.name_it}</p>
               </div>
               <p className="text-xs text-brand-gold mt-1">
                 {item.category === 'pizza' ? `Tonda: €${item.base_price_tonda?.toFixed(2)} | Teglia: €${item.base_price_teglia?.toFixed(2)}` : `€${item.price?.toFixed(2)}`}
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => startEdit(item)} className="p-2 text-white/50 hover:bg-white/10 rounded"><Edit2 size={16} /></button>
-              <button onClick={() => handleDelete(item.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={16} /></button>
+              <button onClick={() => startEdit(item)} className="p-2 opacity-50 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 rounded"><Edit2 size={16} /></button>
+              <button onClick={() => handleDelete(item.id)} className="p-2 text-red-500 dark:text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={16} /></button>
             </div>
           </div>
         ))}

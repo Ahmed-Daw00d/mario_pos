@@ -54,21 +54,21 @@ export function TakeawayModal({ onClose, onCreated }) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}
     >
-      <div className="bg-brand-card w-full max-w-sm rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+      <div className="bg-card w-full max-w-sm rounded-3xl border border-border shadow-2xl overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-orange-500/10">
+        <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-orange-500/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
-              <ShoppingBag size={18} className="text-orange-400" />
+              <ShoppingBag size={18} className="text-orange-500 dark:text-orange-400" />
             </div>
             <div>
-              <h2 className="font-bold text-white">Asporto / Takeaway</h2>
-              <p className="text-xs text-white/40">Nuovo ordine da asporto</p>
+              <h2 className="font-bold text-foreground">Asporto / Takeaway</h2>
+              <p className="text-xs opacity-40">Nuovo ordine da asporto</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-            <X size={18} className="text-white/60" />
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+            <X size={18} className="opacity-60" />
           </button>
         </div>
 
@@ -76,11 +76,11 @@ export function TakeawayModal({ onClose, onCreated }) {
         <div className="p-6 space-y-4">
           {/* Customer name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">
+            <label className="text-xs font-semibold opacity-50 uppercase tracking-wide">
               Nome Cliente <span className="text-brand-red">*</span>
             </label>
             <div className="relative">
-              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" />
               <input
                 type="text"
                 value={customerName}
@@ -90,16 +90,16 @@ export function TakeawayModal({ onClose, onCreated }) {
                 autoFocus
               />
             </div>
-            {error && <p className="text-red-400 text-xs">{error}</p>}
+            {error && <p className="text-red-500 dark:text-red-400 text-xs">{error}</p>}
           </div>
 
           {/* Phone */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-white/50 uppercase tracking-wide">
-              Telefono <span className="text-white/30">(opzionale)</span>
+            <label className="text-xs font-semibold opacity-50 uppercase tracking-wide">
+              Telefono <span className="opacity-30">(opzionale)</span>
             </label>
             <div className="relative">
-              <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" />
               <input
                 type="tel"
                 value={phone}
@@ -110,7 +110,7 @@ export function TakeawayModal({ onClose, onCreated }) {
             </div>
           </div>
 
-          <p className="text-xs text-white/30 text-center italic">
+          <p className="text-xs opacity-30 text-center italic">
             L'ordine apparirà in cucina con il tag 🛍️ Asporto
           </p>
         </div>
@@ -123,7 +123,7 @@ export function TakeawayModal({ onClose, onCreated }) {
           <button
             onClick={handleCreate}
             disabled={loading || !customerName.trim()}
-            className="btn-primary flex items-center justify-center gap-2 disabled:opacity-40 bg-orange-500 hover:bg-orange-600"
+            className="btn-primary flex items-center justify-center gap-2 disabled:opacity-40 bg-orange-500 hover:bg-orange-600 text-white"
           >
             {loading ? (
               <Loader size={16} className="animate-spin" />

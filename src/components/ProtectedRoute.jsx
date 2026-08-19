@@ -21,16 +21,16 @@ export function ProtectedRoute({ children, requiredRole }) {
   // Logged in but insufficient role
   if (requiredRole === 'admin' && !isAdmin) {
     return (
-      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-8 text-center gap-6">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center gap-6">
         <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto">
-          <ShieldX size={40} className="text-red-400" />
+          <ShieldX size={40} className="text-red-500 dark:text-red-400" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Accesso Negato</h2>
-          <p className="text-white/50">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Accesso Negato</h2>
+          <p className="opacity-60">
             Non hai i permessi per accedere a questa sezione.
           </p>
-          <p className="text-white/30 text-sm mt-1">
+          <p className="opacity-40 text-sm mt-1">
             Ruolo richiesto: <span className="text-brand-gold font-semibold">Admin</span>
           </p>
         </div>

@@ -33,14 +33,14 @@ function TableCard({ table, onClick, isSelected }) {
   return (
     <button onClick={onClick}
       className={`relative rounded-2xl border-2 p-4 transition-all duration-200 hover:scale-105 active:scale-95 text-center
-        ${cfg.cls} ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-brand-dark' : ''}`}>
+        ${cfg.cls} ${isSelected ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background' : ''}`}>
       <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-      <p className="text-3xl font-black text-white">{table.table_number}</p>
-      <p className="text-xs text-white/60 mt-1">{table.seats} posti</p>
+      <p className="text-3xl font-black text-foreground">{table.table_number}</p>
+      <p className="text-xs opacity-60 mt-1">{table.seats} posti</p>
       <p className={`text-xs font-semibold mt-1
         ${table.status === 'available' ? 'text-brand-green'
           : table.status === 'waiting_payment' ? 'text-brand-gold'
-          : 'text-white/70'}`}>
+          : 'opacity-70'}`}>
         {cfg.label}
       </p>
     </button>
@@ -53,11 +53,11 @@ function TableCard({ table, onClick, isSelected }) {
 function PaymentMethodModal({ onSelect, onCancel, total }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
-      <div className="bg-brand-card w-full max-w-sm rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+      <div className="bg-card w-full max-w-sm rounded-3xl border border-border shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-white/10 text-center">
-          <p className="text-xs text-white/40 mb-1">طريقة الدفع — Metodo di pagamento</p>
+        <div className="px-6 py-5 border-b border-border text-center">
+          <p className="text-xs opacity-60 mb-1">Metodo di pagamento</p>
           <p className="text-3xl font-black text-brand-gold">€{total?.toFixed(2)}</p>
         </div>
 
@@ -69,8 +69,8 @@ function PaymentMethodModal({ onSelect, onCancel, total }) {
               bg-green-500/10 hover:bg-green-500/20 hover:border-green-500/60 transition-all active:scale-95">
             <span className="text-4xl">💵</span>
             <div className="text-left">
-              <p className="font-bold text-white text-lg">Contanti</p>
-              <p className="text-sm text-white/50">نقداً — Cash payment</p>
+              <p className="font-bold text-foreground text-lg">Contanti</p>
+              <p className="text-sm opacity-60">Pagamento in contanti</p>
             </div>
           </button>
 
@@ -80,8 +80,8 @@ function PaymentMethodModal({ onSelect, onCancel, total }) {
               bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-500/60 transition-all active:scale-95">
             <span className="text-4xl">💳</span>
             <div className="text-left">
-              <p className="font-bold text-white text-lg">Carta / POS</p>
-              <p className="text-sm text-white/50">بطاقة — Card payment</p>
+              <p className="font-bold text-foreground text-lg">Carta / POS</p>
+              <p className="text-sm opacity-60">Pagamento con carta</p>
             </div>
           </button>
         </div>
@@ -155,17 +155,17 @@ function BillModal({ table, onClose }) {
       await printCanvas(canvas);
     } catch (err) {
       console.error('Print failed', err);
-      alert('فشل الطباعة: ' + (err.message || 'Unknown error'));
+      alert('Stampa fallita: ' + (err.message || 'Errore sconosciuto'));
     }
   }
 
   if (closed) return (
     <div className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="bg-brand-card rounded-3xl p-10 text-center space-y-4 border border-white/10">
+      <div className="bg-card rounded-3xl p-10 text-center space-y-4 border border-border">
         <div className="w-16 h-16 rounded-full bg-brand-green/20 flex items-center justify-center text-3xl mx-auto">✅</div>
-        <h3 className="text-xl font-bold text-white">Tavolo {table.table_number} chiuso</h3>
-        <p className="text-white/50 italic">تم إغلاق الطاولة بنجاح</p>
+        <h3 className="text-xl font-bold text-foreground">Tavolo {table.table_number} chiuso</h3>
+        <p className="opacity-60 italic">Tavolo chiuso con successo</p>
       </div>
     </div>
   );
@@ -173,66 +173,67 @@ function BillModal({ table, onClose }) {
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
-        <div className="bg-brand-card w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 shadow-2xl">
+        style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+        <div className="bg-card w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-border shadow-2xl">
           {/* Header */}
-          <div className="sticky top-0 bg-brand-card/95 px-5 pt-5 pb-4 border-b border-white/10 z-10">
+          <div className="sticky top-0 bg-card/95 px-5 pt-5 pb-4 border-b border-border z-10 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Tavolo {table.table_number}</h2>
-                <p className="text-sm text-white/50">الفاتورة — Il Conto</p>
+                <h2 className="text-xl font-bold text-foreground">Tavolo {table.table_number}</h2>
+                <p className="text-sm opacity-60">Il Conto</p>
               </div>
-              <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10">
-                <X size={20} className="text-white/60" />
+              <button onClick={onClose} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                <X size={20} className="opacity-60" />
               </button>
             </div>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-white/40">جاري التحميل...</div>
+            <div className="p-8 text-center opacity-60">Caricamento...</div>
           ) : (
             <div id="receipt" className="p-5 space-y-4">
               {/* Receipt Header */}
-              <div className="text-center border-b border-white/10 pb-4">
+              <div className="text-center border-b border-border pb-4">
                 <p className="font-display italic font-bold text-2xl text-brand-gold">Pizzaria da Mario</p>
-                <p className="text-xs text-white/40">Via Aldo Moro 164 — Gallicano nel Lazio (RM)</p>
-                <p className="text-xs text-white/40 mt-1">
+                <p className="text-xs opacity-60">Via Aldo Moro 164, 00010 Gallicano nel Lazio (RM)</p>
+                <p className="text-xs opacity-60 mt-1">Tel: +39 327 086 4751 | Fisso: 06 9435 5249</p>
+                <p className="text-xs opacity-60 mt-1">
                   Tavolo {table.table_number} — {new Date().toLocaleString('it-IT')}
                 </p>
               </div>
 
               {orders.map((order, oi) => (
                 <div key={order.id} className="space-y-1">
-                  {oi > 0 && <div className="border-t border-white/10 pt-3" />}
-                  <p className="text-xs text-white/40">Ordine #{order.id.slice(-4).toUpperCase()}</p>
+                  {oi > 0 && <div className="border-t border-border pt-3" />}
+                  <p className="text-xs opacity-60">Ordine #{order.id.slice(-4).toUpperCase()}</p>
                   {order.items?.map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
-                      <span className="text-white/80">
+                      <span className="opacity-90">
                         {item.quantity}× {item.item_name}
-                        {item.size && <span className="text-xs text-white/40"> ({item.size})</span>}
+                        {item.size && <span className="text-xs opacity-60"> ({item.size})</span>}
                       </span>
-                      <span className="text-white font-medium">
+                      <span className="font-medium text-foreground">
                         €{(item.total_price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
-                  <div className="flex justify-between text-sm text-white/50 border-t border-white/5 pt-1">
+                  <div className="flex justify-between text-sm opacity-70 border-t border-border pt-1">
                     <span>Subtotale</span>
                     <span>€{order.subtotal?.toFixed(2)}</span>
                   </div>
                 </div>
               ))}
 
-              <div className="border-t-2 border-white/20 pt-3 flex justify-between items-center">
-                <span className="text-lg font-bold text-white">TOTALE</span>
+              <div className="border-t-2 border-border pt-3 flex justify-between items-center">
+                <span className="text-lg font-bold text-foreground">TOTALE</span>
                 <span className="text-3xl font-black text-brand-gold">€{total.toFixed(2)}</span>
               </div>
-              <p className="text-xs text-white/30 text-center italic">Grazie per la vostra visita! 🙏</p>
+              <p className="text-xs opacity-40 text-center italic">Grazie per la vostra visita! 🙏</p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="p-5 border-t border-white/10 space-y-3">
+          <div className="p-5 border-t border-border space-y-3">
             <button onClick={handlePrint} className="btn-ghost w-full flex items-center justify-center gap-2">
               <Printer size={18} /> Stampa scontrino
             </button>
@@ -253,7 +254,8 @@ function BillModal({ table, onClose }) {
             }}>
               <div className="text-center border-b border-black pb-4 mb-4">
                 <p className="font-bold text-2xl">Pizzaria da Mario</p>
-                <p className="text-sm">Via Aldo Moro 164 - Gallicano nel Lazio (RM)</p>
+                <p className="text-sm">Via Aldo Moro 164, 00010 Gallicano nel Lazio (RM)</p>
+                <p className="text-sm mt-1">Tel: +39 327 086 4751 | Fisso: 06 9435 5249</p>
                 <p className="text-sm mt-1">
                   Tavolo {table.table_number} - {new Date().toLocaleString('it-IT')}
                 </p>
@@ -300,16 +302,16 @@ function BillModal({ table, onClose }) {
 function ToggleRow({ item, collection: col, onToggle }) {
   return (
     <div className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all
-      ${item.is_available ? 'border-white/10 bg-white/3' : 'border-red-500/30 bg-red-500/5 opacity-60'}`}>
+      ${item.is_available ? 'border-border bg-card' : 'border-red-500/30 bg-red-500/5 opacity-60'}`}>
       <div>
-        <p className="text-sm font-medium text-white">{item.name_it || item.name_ar}</p>
-        {item.name_ar && item.name_it && <p className="text-xs text-white/40">{item.name_ar}</p>}
+        <p className="text-sm font-medium text-foreground">{item.name_it || item.name_ar}</p>
+        {item.name_ar && item.name_it && <p className="text-xs opacity-60">{item.name_ar}</p>}
         {item.price && <p className="text-xs text-brand-gold">€{item.price?.toFixed(2)}</p>}
       </div>
       <button
         onClick={() => onToggle(col, item.id, item.is_available)}
         className={`relative inline-flex w-12 h-6 rounded-full transition-all duration-300 flex-shrink-0
-          ${item.is_available ? 'bg-brand-green' : 'bg-white/20'}`}>
+          ${item.is_available ? 'bg-brand-green' : 'bg-black/20 dark:bg-white/20'}`}>
         <span className={`inline-block w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 mt-0.5
           ${item.is_available ? 'translate-x-6' : 'translate-x-0.5'}`} />
       </button>
@@ -329,7 +331,7 @@ function InventoryTab() {
   }
 
   if (loading) return (
-    <div className="text-white/40 text-center py-8 italic">Caricamento inventario...</div>
+    <div className="opacity-50 text-center py-8 italic">Caricamento inventario...</div>
   );
 
   const sections = [
@@ -345,7 +347,7 @@ function InventoryTab() {
         {sections.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all
-              ${activeSection === s.id ? 'bg-brand-red text-white' : 'bg-white/10 text-white/50 hover:bg-white/15'}`}>
+              ${activeSection === s.id ? 'bg-brand-red text-white' : 'bg-black/5 dark:bg-white/10 opacity-70 hover:opacity-100'}`}>
             {s.emoji} {s.label}
           </button>
         ))}
@@ -382,27 +384,27 @@ function QRTab({ tables }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-white/50 text-sm">Clicca su un tavolo per vedere il suo QR Code</p>
+      <p className="opacity-60 text-sm">Clicca su un tavolo per vedere il suo QR Code</p>
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
         {tables.map(t => (
           <button key={t.id} onClick={() => setSelectedTable(t)}
             className={`aspect-square rounded-xl flex items-center justify-center text-xl font-bold border-2 transition-all
               ${selectedTable?.id === t.id
-                ? 'border-brand-red bg-brand-red/20 text-white'
-                : 'border-white/10 bg-white/5 text-white/70 hover:border-white/30'}`}>
+                ? 'border-brand-red bg-brand-red/20 text-brand-red dark:text-white'
+                : 'border-border bg-card text-foreground opacity-70 hover:opacity-100'}`}>
             {t.table_number}
           </button>
         ))}
       </div>
       {selectedTable && (
         <div className="card p-6 text-center space-y-4 animate-fade-in">
-          <h3 className="font-bold text-white text-lg">Tavolo {selectedTable.table_number}</h3>
+          <h3 className="font-bold text-foreground text-lg">Tavolo {selectedTable.table_number}</h3>
           <div className="flex justify-center">
             <img src={generateQR(selectedTable.id)}
               alt={`QR Tavolo ${selectedTable.table_number}`}
               className="w-48 h-48 rounded-2xl" />
           </div>
-          <p className="text-xs text-white/40 break-all">{baseUrl}/table/{selectedTable.id}</p>
+          <p className="text-xs opacity-60 break-all">{baseUrl}/table/{selectedTable.id}</p>
           <a href={generateQR(selectedTable.id)}
             download={`qr-tavolo-${selectedTable.table_number}.png`}
             className="btn-ghost inline-flex items-center gap-2 mx-auto">
@@ -426,8 +428,8 @@ function SettingsTab() {
       <div className="card p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-white">Stampante Termica</h3>
-            <p className="text-xs text-white/40 mt-0.5">Configurazione connessione TCP</p>
+            <h3 className="font-semibold text-foreground">Stampante Termica</h3>
+            <p className="text-xs opacity-60 mt-0.5">Configurazione connessione TCP</p>
           </div>
           <button
             onClick={() => setShowPrinter(true)}
@@ -439,7 +441,7 @@ function SettingsTab() {
 
       {/* Embedded MenuManager */}
       <div>
-        <p className="text-xs text-white/40 font-semibold uppercase tracking-wide mb-3 px-1">
+        <p className="text-xs opacity-60 font-semibold uppercase tracking-wide mb-3 px-1">
           Gestione Menu
         </p>
         <MenuManager />
@@ -483,15 +485,15 @@ export function CashierDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-dark">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-brand-dark/95 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">💰</span>
             <div>
-              <h1 className="text-xl font-bold text-white">Cassa</h1>
-              <p className="text-xs text-white/40">
+              <h1 className="text-xl font-bold text-foreground">Cassa</h1>
+              <p className="text-xs opacity-60">
                 {isAdmin ? '👑 Admin' : '👤 Cassiere'} — {user?.email}
               </p>
             </div>
@@ -511,16 +513,16 @@ export function CashierDashboard() {
             <div className="flex gap-3">
               <div className="text-center">
                 <p className="text-xl font-black text-brand-red">{stats.occupied}</p>
-                <p className="text-[10px] text-white/40">Occupati</p>
+                <p className="text-[10px] opacity-60">Occupati</p>
               </div>
               <div className="text-center">
                 <p className="text-xl font-black text-brand-green">{stats.available}</p>
-                <p className="text-[10px] text-white/40">Liberi</p>
+                <p className="text-[10px] opacity-60">Liberi</p>
               </div>
               {stats.waiting > 0 && (
                 <div className="text-center">
                   <p className="text-xl font-black text-brand-gold">{stats.waiting}</p>
-                  <p className="text-[10px] text-white/40">Il Conto</p>
+                  <p className="text-[10px] opacity-60">Il Conto</p>
                 </div>
               )}
             </div>
@@ -528,9 +530,9 @@ export function CashierDashboard() {
             {/* Logout */}
             <button
               onClick={logout}
-              className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
               title="Logout">
-              <LogOut size={18} className="text-white/40" />
+              <LogOut size={18} className="opacity-60 hover:opacity-100" />
             </button>
           </div>
         </div>
@@ -540,7 +542,7 @@ export function CashierDashboard() {
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all
-                ${activeTab === tab.id ? 'bg-brand-red text-white' : 'bg-white/10 text-white/50 hover:bg-white/15'}`}>
+                ${activeTab === tab.id ? 'bg-brand-red text-white' : 'bg-black/5 dark:bg-white/10 opacity-70 hover:opacity-100'}`}>
               <span>{tab.emoji}</span> {tab.label}
             </button>
           ))}
@@ -562,12 +564,12 @@ export function CashierDashboard() {
               ))}
             </div>
             {/* Legend */}
-            <div className="flex gap-4 text-xs text-white/40">
+            <div className="flex gap-4 text-xs opacity-60">
               <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-green" />Libero</div>
               <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-red animate-pulse" />Occupato</div>
               <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-gold animate-pulse" />Il Conto</div>
             </div>
-            <p className="text-xs text-white/30 mt-2 italic">
+            <p className="text-xs opacity-50 mt-2 italic">
               Clicca su un tavolo occupato per vedere il conto
             </p>
           </div>

@@ -7,13 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: 'var(--bg-main)',
+        foreground: 'var(--text-main)',
+        card: 'var(--bg-card)',
+        border: 'var(--border-color)',
         brand: {
-          red:    '#C8102E',
-          green:  '#008C45',
-          gold:   '#F4D03F',
-          dark:   '#1A1A2E',
-          card:   '#16213E',
-          navy:   '#0F3460',
+          red:    'var(--brand-red)',
+          green:  'var(--brand-green)',
+          gold:   'var(--brand-gold)',
+          dark:   'var(--brand-dark)',
+          card:   'var(--brand-card)',
+          navy:   'var(--brand-navy)',
         }
       },
       fontFamily: {

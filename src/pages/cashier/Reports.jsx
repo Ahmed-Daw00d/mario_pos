@@ -19,8 +19,8 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
         </div>
       </div>
       <p className={`text-2xl font-black ${color.text}`}>{value}</p>
-      <p className="text-sm text-white/50 mt-1">{label}</p>
-      {sub && <p className="text-xs text-white/30 mt-0.5">{sub}</p>}
+      <p className="text-sm opacity-50 mt-1">{label}</p>
+      {sub && <p className="text-xs opacity-30 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -84,13 +84,13 @@ export function Reports() {
     <div className="space-y-6">
       {/* Date picker + Refresh */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-          <Calendar size={16} className="text-white/40" />
+        <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 border border-border rounded-xl px-4 py-2">
+          <Calendar size={16} className="opacity-40" />
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="bg-transparent text-white text-sm outline-none"
+            className="bg-transparent text-foreground text-sm outline-none"
             max={new Date().toISOString().split('T')[0]}
           />
         </div>
@@ -112,14 +112,14 @@ export function Reports() {
       {loading ? (
         <div className="py-16 text-center">
           <div className="text-4xl mb-3 animate-bounce">📊</div>
-          <p className="text-white/40 italic">Caricamento dati...</p>
+          <p className="opacity-40 italic">Caricamento dati...</p>
         </div>
       ) : indexError ? (
         // Missing Firestore Composite Index
         <div className="py-12 text-center space-y-4">
           <div className="text-5xl mb-2">⚠️</div>
-          <h3 className="text-lg font-bold text-white">Index mancante su Firestore</h3>
-          <p className="text-sm text-white/50 max-w-xs mx-auto">
+          <h3 className="text-lg font-bold text-foreground">Index mancante su Firestore</h3>
+          <p className="text-sm opacity-50 max-w-xs mx-auto">
             Per i report è richiesto un indice composito su Firestore.
             Clicca il pulsante per crearlo (operazione una-tantum).
           </p>
@@ -130,15 +130,15 @@ export function Reports() {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-gold text-black font-bold hover:bg-yellow-400 transition-colors">
             🔗 Crea Indice su Firebase Console
           </a>
-          <p className="text-xs text-white/30 italic">
+          <p className="text-xs opacity-30 italic">
             Dopo la creazione (1-2 minuti) ricarica questa pagina.
           </p>
         </div>
       ) : sessions.length === 0 ? (
         <div className="py-16 text-center">
           <div className="text-6xl mb-4 opacity-20">📈</div>
-          <p className="text-white/40 text-lg font-medium">Nessun dato per questa data</p>
-          <p className="text-white/20 text-sm mt-1">
+          <p className="opacity-40 text-lg font-medium">Nessun dato per questa data</p>
+          <p className="opacity-30 text-sm mt-1">
             {date === new Date().toISOString().split('T')[0]
               ? 'La giornata non ha ancora ordini chiusi.'
               : 'Nessuna sessione chiusa in questa data.'}
@@ -181,7 +181,7 @@ export function Reports() {
           {/* Payment breakdown bar */}
           {totalRevenue > 0 && (
             <div className="card p-4 space-y-3">
-              <p className="text-xs text-white/40 font-semibold uppercase tracking-wide">
+              <p className="text-xs opacity-40 font-semibold uppercase tracking-wide">
                 Ripartizione pagamenti
               </p>
               <div className="flex rounded-full overflow-hidden h-3">
@@ -201,7 +201,7 @@ export function Reports() {
                 )}
                 {(totalRevenue - cashTotal - cardTotal) > 0 && (
                   <div
-                    className="bg-white/20 h-full flex-1"
+                    className="bg-black/10 dark:bg-white/20 h-full flex-1"
                     title="Non specificato"
                   />
                 )}
@@ -209,11 +209,11 @@ export function Reports() {
               <div className="flex gap-4 text-xs">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                  <span className="text-white/50">Contanti {cashTotal > 0 ? `${((cashTotal / totalRevenue) * 100).toFixed(0)}%` : ''}</span>
+                  <span className="opacity-50">Contanti {cashTotal > 0 ? `${((cashTotal / totalRevenue) * 100).toFixed(0)}%` : ''}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  <span className="text-white/50">Carta {cardTotal > 0 ? `${((cardTotal / totalRevenue) * 100).toFixed(0)}%` : ''}</span>
+                  <span className="opacity-50">Carta {cardTotal > 0 ? `${((cardTotal / totalRevenue) * 100).toFixed(0)}%` : ''}</span>
                 </div>
               </div>
             </div>
@@ -221,7 +221,7 @@ export function Reports() {
 
           {/* Sessions list */}
           <div className="space-y-2">
-            <p className="text-xs text-white/40 font-semibold uppercase tracking-wide px-1">
+            <p className="text-xs opacity-40 font-semibold uppercase tracking-wide px-1">
               Dettaglio Sessioni — {sessions.length}
             </p>
             {sessions
@@ -237,25 +237,25 @@ export function Reports() {
 
                 return (
                   <div key={session.id}
-                    className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/5">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 flex-shrink-0">
+                    className="flex items-center gap-3 px-4 py-3 bg-black/5 dark:bg-white/5 rounded-xl border border-border">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-black/5 dark:bg-white/10 flex-shrink-0">
                       {isTakeaway
-                        ? <ShoppingBag size={16} className="text-orange-400" />
-                        : <UtensilsCrossed size={16} className="text-white/50" />}
+                        ? <ShoppingBag size={16} className="text-orange-500 dark:text-orange-400" />
+                        : <UtensilsCrossed size={16} className="opacity-50" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-foreground">
                         {isTakeaway
                           ? `🛍️ ${session.customer_name || 'Asporto'}`
                           : `Tavolo ${session.table_number || '—'}`}
                       </p>
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs opacity-40">
                         {session.order_ids?.length || 0} ordini · chiuso alle {closedAt}
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-white">€{(session.total_amount || 0).toFixed(2)}</p>
-                      <p className="text-xs text-white/40">{payIcon}</p>
+                      <p className="text-sm font-bold text-foreground">€{(session.total_amount || 0).toFixed(2)}</p>
+                      <p className="text-xs opacity-40">{payIcon}</p>
                     </div>
                   </div>
                 );

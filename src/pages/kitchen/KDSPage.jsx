@@ -62,24 +62,24 @@ function OrderCard({ order, onStatusChange, onPrint }) {
             {isTakeaway ? (
               <>
                 <div className="flex items-center gap-1.5">
-                  <ShoppingBag size={14} className="text-orange-400" />
-                  <p className="font-bold text-orange-400 text-base">Asporto</p>
+                  <ShoppingBag size={14} className="text-orange-500 dark:text-orange-400" />
+                  <p className="font-bold text-orange-500 dark:text-orange-400 text-base">Asporto</p>
                 </div>
-                <p className="font-semibold text-white text-sm">{order.customer_name}</p>
+                <p className="font-semibold text-foreground text-sm">{order.customer_name}</p>
                 {order.phone && (
-                  <p className="text-xs text-white/40">{order.phone}</p>
+                  <p className="text-xs opacity-40">{order.phone}</p>
                 )}
               </>
             ) : (
               <>
-                <p className="font-bold text-white text-lg">Tavolo {order.table_number}</p>
-                <p className="text-xs text-white/50">#{order.id.slice(-4).toUpperCase()}</p>
+                <p className="font-bold text-foreground text-lg">Tavolo {order.table_number}</p>
+                <p className="text-xs opacity-50">#{order.id.slice(-4).toUpperCase()}</p>
               </>
             )}
           </div>
         </div>
         <div className="text-right">
-          <div className={`flex items-center gap-1 text-sm font-semibold ${isUrgent ? 'text-red-400' : 'text-white/60'}`}>
+          <div className={`flex items-center gap-1 text-sm font-semibold ${isUrgent ? 'text-red-500 dark:text-red-400' : 'opacity-60'}`}>
             <Clock size={14} />
             <span>{elapsed}</span>
           </div>
@@ -93,12 +93,12 @@ function OrderCard({ order, onStatusChange, onPrint }) {
           <div key={idx} className="space-y-1">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-baseline gap-2">
-                <span className="text-white font-bold text-xl">{item.quantity}×</span>
+                <span className="text-foreground font-bold text-xl">{item.quantity}×</span>
                 <div>
-                  <span className="text-white font-semibold">{item.item_name}</span>
+                  <span className="text-foreground font-semibold">{item.item_name}</span>
                   {item.size && (
                     <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold
-                      ${item.size === 'tonda' ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'}`}>
+                      ${item.size === 'tonda' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300' : 'bg-purple-500/20 text-purple-600 dark:text-purple-300'}`}>
                       {item.size.toUpperCase()}
                     </span>
                   )}
@@ -109,19 +109,19 @@ function OrderCard({ order, onStatusChange, onPrint }) {
             {/* Teglia splits */}
             {item.split_type && item.split_type !== 'whole' && item.splits && (
               <div className="ml-8 space-y-1">
-                <p className="text-xs text-white/40 font-semibold uppercase tracking-wide">
+                <p className="text-xs opacity-40 font-semibold uppercase tracking-wide">
                   {item.split_type === 'half' ? '½ + ½' : '⅓ + ⅓ + ⅓'}
                 </p>
                 {item.splits.map((split, si) => (
                   <div key={si} className="flex items-start gap-2 text-sm">
-                    <span className="text-xs bg-white/10 rounded px-1.5 py-0.5 text-white/50 flex-shrink-0">Q{si + 1}</span>
+                    <span className="text-xs bg-black/10 dark:bg-white/10 rounded px-1.5 py-0.5 opacity-50 flex-shrink-0">Q{si + 1}</span>
                     <div>
-                      <span className="text-white/80">{split.pizza_name}</span>
+                      <span className="opacity-80 font-medium">{split.pizza_name}</span>
                       {split.removed_ingredients?.length > 0 && (
-                        <p className="text-xs text-red-400 mt-1">❌ {split.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
+                        <p className="text-xs text-red-500 dark:text-red-400 mt-1">❌ {split.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                       )}
                       {split.added_ingredients?.length > 0 && (
-                        <p className="text-xs text-green-400">➕ {split.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
+                        <p className="text-xs text-green-600 dark:text-green-400">➕ {split.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                       )}
                     </div>
                   </div>
@@ -133,17 +133,17 @@ function OrderCard({ order, onStatusChange, onPrint }) {
             {item.split_type === 'whole' && (
               <div className="ml-8 space-y-0.5">
                 {item.removed_ingredients?.length > 0 && (
-                  <p className="text-sm text-red-400 font-medium mt-1">❌ بدون: {item.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
+                  <p className="text-sm text-red-500 dark:text-red-400 font-medium mt-1">❌ Senza: {item.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
                 )}
                 {item.added_ingredients?.length > 0 && (
-                  <p className="text-sm text-green-400 font-medium">➕ إضافة: {item.added_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium">➕ Extra: {item.added_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
                 )}
               </div>
             )}
 
             {/* Kebab config */}
             {item.kebab_config && (
-              <div className="ml-8 text-sm space-y-0.5 text-white/60">
+              <div className="ml-8 text-sm space-y-0.5 opacity-60">
                 <p>🥙 {item.kebab_config.serving_style}</p>
                 {item.kebab_config.vegetables?.length > 0 && <p>🥗 {item.kebab_config.vegetables.join(' · ')}</p>}
                 {item.kebab_config.sauces?.length > 0 && <p>🥣 {item.kebab_config.sauces.join(' · ')}</p>}
@@ -151,7 +151,7 @@ function OrderCard({ order, onStatusChange, onPrint }) {
             )}
 
             {item.notes && (
-              <p className="ml-8 text-xs text-brand-gold italic">📝 {item.notes}</p>
+              <p className="ml-8 text-xs text-brand-gold font-medium italic">📝 {item.notes}</p>
             )}
           </div>
         ))}
@@ -160,7 +160,7 @@ function OrderCard({ order, onStatusChange, onPrint }) {
       {/* Actions */}
       <div className="px-4 pb-4 grid grid-cols-2 gap-2">
         <button onClick={() => onPrint(order)}
-          className="col-span-2 btn-ghost py-2 flex items-center justify-center gap-2 mb-1">
+          className="col-span-2 btn-ghost py-2 flex items-center justify-center gap-2 mb-1 border border-border">
           <Printer size={16} /> Stampa Ordine
         </button>
         {/* Only show the generic next-status button for statuses BEFORE 'ready'.
@@ -213,7 +213,7 @@ export function KDSPage() {
       } catch (err) {
         console.error('Print failed', err);
         setPrintingOrder(null); // clear on failure too
-        alert('فشل الطباعة: ' + err.message);
+        alert('Errore di stampa: ' + err.message);
       } finally {
         // Keep receipt visible briefly then clear
         setTimeout(() => setPrintingOrder(null), 500);
@@ -265,24 +265,24 @@ export function KDSPage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-4">
         <div className="text-6xl animate-bounce">🍕</div>
-        <p className="text-white/50 italic">Caricamento ordini...</p>
+        <p className="opacity-50 italic">Caricamento ordini...</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-brand-dark">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-brand-dark/95 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-3xl">🔥</span>
             <div>
-              <h1 className="text-xl font-bold text-white">Cucina</h1>
-              <p className="text-xs text-white/40">Kitchen Display System</p>
+              <h1 className="text-xl font-bold text-foreground">Cucina</h1>
+              <p className="text-xs opacity-40">Kitchen Display System</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -290,17 +290,17 @@ export function KDSPage() {
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors
                 ${autoPrint
                   ? 'bg-brand-green/20 text-brand-green border border-brand-green/30'
-                  : 'bg-white/10 text-white/40 border border-white/10'}`}>
+                  : 'bg-black/10 dark:bg-white/10 opacity-40 border border-border'}`}>
               <Printer size={14} />
               Auto-Stampa: {autoPrint ? 'ON' : 'OFF'}
             </button>
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold
-              ${orders.length > 0 ? 'bg-brand-red/20 text-brand-red animate-pulse-slow' : 'bg-white/10 text-white/40'}`}>
+              ${orders.length > 0 ? 'bg-brand-red/20 text-brand-red animate-pulse-slow' : 'bg-black/10 dark:bg-white/10 opacity-40'}`}>
               <Bell size={14} />
               {orders.length} ordini attivi
             </div>
-            <button onClick={logout} className="p-2 rounded-xl hover:bg-white/10 transition-colors" title="Logout">
-              <LogOut size={18} className="text-white/40" />
+            <button onClick={logout} className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors" title="Logout">
+              <LogOut size={18} className="opacity-40" />
             </button>
           </div>
         </div>
@@ -316,11 +316,11 @@ export function KDSPage() {
           ].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all
-                ${filter === f.id ? 'bg-brand-red text-white' : 'bg-white/10 text-white/50 hover:bg-white/20'}`}>
+                ${filter === f.id ? 'bg-brand-red text-white' : 'bg-black/5 dark:bg-white/10 opacity-50 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/20'}`}>
               <span>{f.emoji}</span>
               <span>{f.label}</span>
               {counts[f.id] > 0 && (
-                <span className="bg-white/20 rounded-full px-1.5 text-xs">{counts[f.id]}</span>
+                <span className="bg-black/20 dark:bg-white/20 rounded-full px-1.5 text-xs font-bold text-foreground">{counts[f.id]}</span>
               )}
             </button>
           ))}
@@ -332,8 +332,8 @@ export function KDSPage() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
             <span className="text-8xl opacity-20">🍽️</span>
-            <p className="text-white/40 text-lg font-medium">Nessun ordine al momento</p>
-            <p className="text-white/20 text-sm">In attesa di nuovi ordini...</p>
+            <p className="opacity-40 text-lg font-medium">Nessun ordine al momento</p>
+            <p className="opacity-20 text-sm">In attesa di nuovi ordini...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
