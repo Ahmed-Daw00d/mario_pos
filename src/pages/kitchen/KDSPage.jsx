@@ -2,9 +2,12 @@
 // Kitchen Display System — Real-time order management for kitchen staff
 import { useState, useEffect, useRef } from 'react';
 import { useKitchenOrders, updateOrderStatus } from '../../hooks/useOrders';
+import { useMenu } from '../../hooks/useMenu';
 import { StatusBadge } from '../../components/ui/SharedUI';
 import { ORDER_STATUS } from '../../data/menuData';
-import { ChevronRight, Clock, Bell, Printer, Settings } from 'lucide-react';
+import { ChevronRight, Clock, Bell, Printer, ShoppingBag, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { printCanvas } from '../../utils/printerHelper';
 import html2canvas from 'html2canvas';
 
 const STATUS_COLORS = {
@@ -15,22 +18,23 @@ const STATUS_COLORS = {
 };
 
 const STATUS_HEADER = {
-  pending:        'bg-amber-500/20 border-b border-amber-500/30',
-  in_preparation: 'bg-blue-500/20  border-b border-blue-500/30',
+  pending:        'bg-amber-500/20  border-b border-amber-500/30',
+  in_preparation: 'bg-blue-500/20   border-b border-blue-500/30',
   in_oven:        'bg-orange-500/20 border-b border-orange-500/30',
   ready:          'bg-green-500/20  border-b border-green-500/30',
 };
 
+// ─── Elapsed time hook ────────────────────────────────────────────────────────
 function useElapsedTime(createdAt) {
   const [elapsed, setElapsed] = useState('');
   useEffect(() => {
     function calc() {
       if (!createdAt) return;
-      const ts = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+      const ts   = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
       const diff = Math.floor((Date.now() - ts.getTime()) / 1000);
-      if (diff < 60) setElapsed(`${diff}s`);
+      if (diff < 60)   setElapsed(`${diff}s`);
       else if (diff < 3600) setElapsed(`${Math.floor(diff / 60)}m`);
-      else setElapsed(`${Math.floor(diff / 3600)}h`);
+      else             setElapsed(`${Math.floor(diff / 3600)}h`);
     }
     calc();
     const id = setInterval(calc, 10000);
@@ -39,20 +43,39 @@ function useElapsedTime(createdAt) {
   return elapsed;
 }
 
+// ─── Order Card ───────────────────────────────────────────────────────────────
 function OrderCard({ order, onStatusChange, onPrint }) {
-  const elapsed = useElapsedTime(order.created_at);
-  const cfg      = ORDER_STATUS[order.status];
-  const isUrgent = order.status === 'pending' && elapsed.includes('m') && parseInt(elapsed) > 10;
+  const elapsed    = useElapsedTime(order.created_at);
+  const cfg        = ORDER_STATUS[order.status];
+  const isUrgent   = order.status === 'pending' && elapsed.includes('m') && parseInt(elapsed) > 10;
+  const isTakeaway = order.type === 'takeaway';
 
   return (
-    <div className={`rounded-2xl border-2 overflow-hidden transition-all duration-300 ${STATUS_COLORS[order.status]} ${isUrgent ? 'animate-pulse-slow' : ''}`}>
+    <div className={`rounded-2xl border-2 overflow-hidden transition-all duration-300
+      ${STATUS_COLORS[order.status]} ${isUrgent ? 'animate-pulse-slow' : ''}`}>
+
       {/* Card header */}
       <div className={`px-4 py-3 flex items-center justify-between ${STATUS_HEADER[order.status]}`}>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{cfg.emoji}</span>
           <div>
-            <p className="font-bold text-white text-lg">Tavolo {order.table_number}</p>
-            <p className="text-xs text-white/50">#{order.id.slice(-4).toUpperCase()}</p>
+            {isTakeaway ? (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <ShoppingBag size={14} className="text-orange-400" />
+                  <p className="font-bold text-orange-400 text-base">Asporto</p>
+                </div>
+                <p className="font-semibold text-white text-sm">{order.customer_name}</p>
+                {order.phone && (
+                  <p className="text-xs text-white/40">{order.phone}</p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-white text-lg">Tavolo {order.table_number}</p>
+                <p className="text-xs text-white/50">#{order.id.slice(-4).toUpperCase()}</p>
+              </>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -95,10 +118,10 @@ function OrderCard({ order, onStatusChange, onPrint }) {
                     <div>
                       <span className="text-white/80">{split.pizza_name}</span>
                       {split.removed_ingredients?.length > 0 && (
-                        <p className="text-xs text-red-400">❌ {split.removed_ingredients.join(', ')}</p>
+                        <p className="text-xs text-red-400 mt-1">❌ {split.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                       )}
                       {split.added_ingredients?.length > 0 && (
-                        <p className="text-xs text-green-400">➕ {split.added_ingredients.join(', ')}</p>
+                        <p className="text-xs text-green-400">➕ {split.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                       )}
                     </div>
                   </div>
@@ -106,14 +129,14 @@ function OrderCard({ order, onStatusChange, onPrint }) {
               </div>
             )}
 
-            {/* Modifications */}
+            {/* Whole modifications */}
             {item.split_type === 'whole' && (
               <div className="ml-8 space-y-0.5">
                 {item.removed_ingredients?.length > 0 && (
-                  <p className="text-sm text-red-400 font-medium">❌ بدون: {item.removed_ingredients.join(' · ')}</p>
+                  <p className="text-sm text-red-400 font-medium mt-1">❌ بدون: {item.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
                 )}
                 {item.added_ingredients?.length > 0 && (
-                  <p className="text-sm text-green-400 font-medium">➕ إضافة: {item.added_ingredients.join(' · ')}</p>
+                  <p className="text-sm text-green-400 font-medium">➕ إضافة: {item.added_ingredients.map(id => ingredients[id]?.name_it || id).join(' · ')}</p>
                 )}
               </div>
             )}
@@ -134,11 +157,15 @@ function OrderCard({ order, onStatusChange, onPrint }) {
         ))}
       </div>
 
+      {/* Actions */}
       <div className="px-4 pb-4 grid grid-cols-2 gap-2">
-        <button onClick={() => onPrint(order)} className="col-span-2 btn-ghost py-2 flex items-center justify-center gap-2 mb-1">
+        <button onClick={() => onPrint(order)}
+          className="col-span-2 btn-ghost py-2 flex items-center justify-center gap-2 mb-1">
           <Printer size={16} /> Stampa Ordine
         </button>
-        {cfg.next && (
+        {/* Only show the generic next-status button for statuses BEFORE 'ready'.
+             'ready → served' is handled below with its own green button. */}
+        {cfg.next && cfg.next !== 'served' && (
           <button
             onClick={() => onStatusChange(order.id, cfg.next)}
             className="col-span-2 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white transition-all
@@ -161,64 +188,53 @@ function OrderCard({ order, onStatusChange, onPrint }) {
   );
 }
 
+// ─── KDS Page ─────────────────────────────────────────────────────────────────
 export function KDSPage() {
-  const { orders, loading } = useKitchenOrders();
+  const { orders, loading }   = useKitchenOrders();
+  const { ingredients } = useMenu(); // Load ingredients to map IDs to localized names
+  const { logout }            = useAuth();
   const [filter, setFilter]   = useState('all');
-  const [printingOrder, setPrintingOrder] = useState(null);
   const [autoPrint, setAutoPrint] = useState(true);
+  const [printingOrder, setPrintingOrder] = useState(null);
   const seenOrderIds = useRef(new Set());
 
+  // ── Print handler ──────────────────────────────────────────────────────────
   const sendToPrinter = async (order) => {
     setPrintingOrder(order);
-    // Give React a tick to render the receipt
     setTimeout(async () => {
       const receiptEl = document.getElementById('print-receipt');
       if (!receiptEl) return;
       try {
         const canvas = await html2canvas(receiptEl, {
-          scale: 2, // High resolution for clear thermal printing
-          backgroundColor: '#ffffff'
+          scale: 2, backgroundColor: '#ffffff'
         });
-        
-        const { Capacitor } = await import('@capacitor/core');
-        if (Capacitor.isNativePlatform()) {
-          const { canvasToEscPos, sendToPrinterTCP } = await import('../../utils/printerHelper');
-          const escPosData = canvasToEscPos(canvas);
-          await sendToPrinterTCP('192.168.1.6', escPosData);
-          console.log('Printed successfully via TCP');
-        } else {
-          const base64Image = canvas.toDataURL('image/png');
-          await fetch('/api/print', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64Image, ip: '192.168.1.6' })
-          });
-          console.log('Printed successfully via API');
-        }
+        await printCanvas(canvas);
+        console.log('Printed successfully');
       } catch (err) {
         console.error('Print failed', err);
+        setPrintingOrder(null); // clear on failure too
         alert('فشل الطباعة: ' + err.message);
+      } finally {
+        // Keep receipt visible briefly then clear
+        setTimeout(() => setPrintingOrder(null), 500);
       }
     }, 100);
   };
 
-  // Play notification sound on new orders and handle Auto-Print
+  // ── New order sound + auto-print ──────────────────────────────────────────
   useEffect(() => {
     if (orders.length === 0) return;
 
-    // First load: just record existing orders, don't beep or print
     if (seenOrderIds.current.size === 0) {
       orders.forEach(o => seenOrderIds.current.add(o.id));
       return;
     }
 
-    // Find orders we haven't seen yet
     const newOrders = orders.filter(o => !seenOrderIds.current.has(o.id));
-    
     if (newOrders.length > 0) {
       newOrders.forEach(o => seenOrderIds.current.add(o.id));
-      
-      // Play beep
+
+      // Beep
       try {
         const ctx  = new (window.AudioContext || window.webkitAudioContext)();
         const osc  = ctx.createOscillator();
@@ -232,9 +248,7 @@ export function KDSPage() {
         osc.stop(ctx.currentTime + 0.5);
       } catch {}
 
-      // Handle Auto-Print
       if (autoPrint) {
-        // Print the most recent new order
         sendToPrinter(newOrders[newOrders.length - 1]);
       }
     }
@@ -274,7 +288,9 @@ export function KDSPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => setAutoPrint(!autoPrint)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors
-                ${autoPrint ? 'bg-brand-green/20 text-brand-green border border-brand-green/30' : 'bg-white/10 text-white/40 border border-white/10'}`}>
+                ${autoPrint
+                  ? 'bg-brand-green/20 text-brand-green border border-brand-green/30'
+                  : 'bg-white/10 text-white/40 border border-white/10'}`}>
               <Printer size={14} />
               Auto-Stampa: {autoPrint ? 'ON' : 'OFF'}
             </button>
@@ -283,17 +299,20 @@ export function KDSPage() {
               <Bell size={14} />
               {orders.length} ordini attivi
             </div>
+            <button onClick={logout} className="p-2 rounded-xl hover:bg-white/10 transition-colors" title="Logout">
+              <LogOut size={18} className="text-white/40" />
+            </button>
           </div>
         </div>
 
         {/* Filter tabs */}
         <div className="px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-none">
           {[
-            { id: 'all',            label: 'Tutti',          emoji: '📋' },
-            { id: 'pending',        label: 'In Attesa',      emoji: '⏳' },
-            { id: 'in_preparation', label: 'In Prep.',       emoji: '👨‍🍳' },
-            { id: 'in_oven',        label: 'In Forno',       emoji: '🔥' },
-            { id: 'ready',          label: 'Pronti',         emoji: '✅' },
+            { id: 'all',            label: 'Tutti',     emoji: '📋' },
+            { id: 'pending',        label: 'In Attesa', emoji: '⏳' },
+            { id: 'in_preparation', label: 'In Prep.',  emoji: '👨‍🍳' },
+            { id: 'in_oven',        label: 'In Forno',  emoji: '🔥' },
+            { id: 'ready',          label: 'Pronti',    emoji: '✅' },
           ].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all
@@ -328,55 +347,65 @@ export function KDSPage() {
         )}
       </main>
 
-      {/* Printable KDS Receipt (Off-screen) */}
+      {/* Printable KDS receipt (off-screen) */}
       {printingOrder && (
-        <div id="print-receipt">
-          <div className="text-center border-b border-black pb-4 mb-4">
-            <h2 className="font-bold text-xl">CUCINA</h2>
-            <h1 className="font-bold text-3xl my-2">Tavolo {printingOrder.table_number}</h1>
-            <p>Ordine #{printingOrder.id.slice(-4).toUpperCase()}</p>
-            <p>{new Date().toLocaleString('it-IT')}</p>
+        <div id="print-receipt" style={{
+          position: 'fixed', left: '-9999px', top: 0,
+          width: '380px', background: 'white', color: 'black', padding: '20px',
+          fontFamily: 'monospace'
+        }}>
+          <div style={{ textAlign: 'center', borderBottom: '2px solid black', paddingBottom: '12px', marginBottom: '12px' }}>
+            <h2 style={{ fontWeight: 'bold', fontSize: '18px' }}>CUCINA — ORDINE</h2>
+            {printingOrder.type === 'takeaway' ? (
+              <>
+                <p style={{ fontSize: '14px', fontWeight: 'bold' }}>🛍️ ASPORTO</p>
+                <h1 style={{ fontWeight: 'bold', fontSize: '26px', margin: '6px 0' }}>{printingOrder.customer_name}</h1>
+                {printingOrder.phone && <p style={{ fontSize: '13px' }}>{printingOrder.phone}</p>}
+              </>
+            ) : (
+              <h1 style={{ fontWeight: 'bold', fontSize: '32px', margin: '6px 0' }}>Tavolo {printingOrder.table_number}</h1>
+            )}
+            <p style={{ fontSize: '13px' }}>#{printingOrder.id.slice(-4).toUpperCase()}</p>
+            <p style={{ fontSize: '12px', color: '#555' }}>{new Date().toLocaleString('it-IT')}</p>
           </div>
+
           {printingOrder.items?.map((item, idx) => (
-            <div key={idx} className="mb-4">
-              <div className="font-bold text-lg">
+            <div key={idx} style={{ marginBottom: '14px' }}>
+              <div style={{ fontWeight: 'bold', fontSize: '17px' }}>
                 {item.quantity}× {item.item_name} {item.size ? `(${item.size})` : ''}
               </div>
-              
-              {/* Teglia Splits */}
               {item.split_type && item.split_type !== 'whole' && item.splits && (
-                <div className="ml-4 mt-1 border-l-2 border-black pl-2">
-                  <p className="font-bold uppercase">{item.split_type === 'half' ? '½ + ½' : '⅓ + ⅓ + ⅓'}</p>
+                <div style={{ marginLeft: '16px', marginTop: '4px', borderLeft: '2px solid black', paddingLeft: '8px' }}>
+                  <p style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                    {item.split_type === 'half' ? '½ + ½' : '⅓ + ⅓ + ⅓'}
+                  </p>
                   {item.splits.map((split, si) => (
-                    <div key={si} className="mb-1">
-                      <span className="font-bold">Q{si + 1}: {split.pizza_name}</span>
-                      {split.removed_ingredients?.length > 0 && <p>Senza: {split.removed_ingredients.join(', ')}</p>}
-                      {split.added_ingredients?.length > 0 && <p>Extra: {split.added_ingredients.join(', ')}</p>}
+                    <div key={si} style={{ marginBottom: '4px' }}>
+                      <span style={{ fontWeight: 'bold' }}>Q{si + 1}: {split.pizza_name}</span>
+                      {split.removed_ingredients?.length > 0 && <p>Senza: {split.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>}
+                      {split.added_ingredients?.length > 0 && <p>Extra: {split.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>}
                     </div>
                   ))}
                 </div>
               )}
-              
-              {/* Whole Modifications */}
               {item.split_type === 'whole' && (
-                <div className="ml-4 text-sm mt-1">
-                  {item.removed_ingredients?.length > 0 && <p>Senza: {item.removed_ingredients.join(', ')}</p>}
-                  {item.added_ingredients?.length > 0 && <p>Extra: {item.added_ingredients.join(', ')}</p>}
+                <div style={{ marginLeft: '16px', fontSize: '14px', marginTop: '4px' }}>
+                  {item.removed_ingredients?.length > 0 && <p>Senza: {item.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>}
+                  {item.added_ingredients?.length > 0 && <p>Extra: {item.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>}
                 </div>
               )}
-              
-              {/* Kebab Config */}
               {item.kebab_config && (
-                <div className="ml-4 text-sm mt-1">
+                <div style={{ marginLeft: '16px', fontSize: '14px', marginTop: '4px' }}>
                   <p>{item.kebab_config.serving_style}</p>
                   {item.kebab_config.vegetables?.length > 0 && <p>Verdure: {item.kebab_config.vegetables.join(', ')}</p>}
                   {item.kebab_config.sauces?.length > 0 && <p>Salse: {item.kebab_config.sauces.join(', ')}</p>}
                 </div>
               )}
-              {item.notes && <p className="ml-4 mt-1 font-bold">NOTE: {item.notes}</p>}
+              {item.notes && <p style={{ marginLeft: '16px', marginTop: '4px', fontWeight: 'bold' }}>NOTE: {item.notes}</p>}
             </div>
           ))}
-          <div className="text-center border-t border-black pt-4 mt-4">
+
+          <div style={{ textAlign: 'center', borderTop: '2px solid black', paddingTop: '12px', marginTop: '12px' }}>
             <p>*** FINE ORDINE ***</p>
           </div>
         </div>

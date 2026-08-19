@@ -1,55 +1,48 @@
-import { useState } from 'react';
-import { Lock } from 'lucide-react';
+// src/components/ProtectedRoute.jsx — Auth-based route protection with RBAC
+import { useAuth } from '../contexts/AuthContext';
+import { Login } from './Login';
+import { LoadingScreen } from './ui/SharedUI';
+import { ShieldX } from 'lucide-react';
 
-export function ProtectedRoute({ children }) {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('casher_auth') === 'true'
-  );
-  const [error, setError] = useState(false);
+/**
+ * @param {React.ReactNode} children
+ * @param {'admin'|'cashier'|undefined} requiredRole
+ *   - undefined / 'cashier' → any authenticated user
+ *   - 'admin'               → only admin role
+ */
+export function ProtectedRoute({ children, requiredRole }) {
+  const { user, role, loading, logout, isAdmin } = useAuth();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (password === 'Aa@132000') {
-      sessionStorage.setItem('casher_auth', 'true');
-      setIsAuthenticated(true);
-      setError(false);
-    } else {
-      setError(true);
-      setPassword('');
-    }
-  };
+  if (loading) return <LoadingScreen message="Verifica accesso..." />;
 
-  if (isAuthenticated) {
-    return children;
-  }
+  // Not logged in → show login page
+  if (!user) return <Login />;
 
-  return (
-    <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-4">
-      <div className="card max-w-sm w-full p-8 space-y-6 text-center border-brand-red/20 border-2">
-        <div className="w-16 h-16 bg-brand-red/20 rounded-full flex items-center justify-center mx-auto text-brand-red">
-          <Lock size={32} />
+  // Logged in but insufficient role
+  if (requiredRole === 'admin' && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center p-8 text-center gap-6">
+        <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto">
+          <ShieldX size={40} className="text-red-400" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">Area Riservata</h2>
-          <p className="text-white/50 text-sm mt-1">Inserisci la password per continuare</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Accesso Negato</h2>
+          <p className="text-white/50">
+            Non hai i permessi per accedere a questa sezione.
+          </p>
+          <p className="text-white/30 text-sm mt-1">
+            Ruolo richiesto: <span className="text-brand-gold font-semibold">Admin</span>
+          </p>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={`input-field w-full text-center tracking-widest text-lg ${error ? 'border-red-500 bg-red-500/10' : ''}`}
-            placeholder="•••••••••"
-            autoFocus
-          />
-          {error && <p className="text-red-400 text-xs">Password errata. Riprova.</p>}
-          <button type="submit" className="btn-primary w-full">
-            Accedi
-          </button>
-        </form>
+        <button
+          onClick={logout}
+          className="btn-ghost px-6 py-2"
+        >
+          ← Torna al login
+        </button>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return children;
 }

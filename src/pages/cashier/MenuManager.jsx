@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db } from '../../firebase';
-import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { useMenu } from '../../hooks/useMenu';
 import { useTables } from '../../hooks/useTables';
 import { Trash2, Plus, Edit2, Save, X } from 'lucide-react';
@@ -111,11 +111,13 @@ function IngredientManager({ ingredients }) {
 
   async function handleSave() {
     if (editingId === 'new') {
-      const { id, ...rest } = formData;
-      if (!id) return alert("Inserisci un ID per l'ingrediente");
-      await addDoc(collection(db, 'ingredients'), { ...rest, id_name: id });
+      const { id: newId, ...rest } = formData;
+      if (!newId) return alert("Inserisci un ID per l'ingrediente (es. cipolla)");
+      // Use setDoc so the document ID matches the ingredient ID referenced by pizzas
+      await setDoc(doc(db, 'ingredients', newId), { ...rest, id: newId });
     } else {
-      await updateDoc(doc(db, 'ingredients', editingId), formData);
+      const { id, ...updateData } = formData;
+      await updateDoc(doc(db, 'ingredients', editingId), updateData);
     }
     setEditingId(null);
   }
@@ -185,9 +187,18 @@ function MenuItemManager({ pizzas, fritti, bevande }) {
 
   async function handleSave() {
     if (editingId === 'new') {
-      await addDoc(collection(db, 'menu_items'), formData);
+      // Auto-assign sort_order based on current count of items in that category
+      const catItems = allItems.filter(i => i.category === formData.category);
+      const maxSort  = catItems.reduce((m, i) => Math.max(m, i.sort_order || 0), 0);
+      await addDoc(collection(db, 'menu_items'), {
+        ...formData,
+        sort_order:    maxSort + 1,
+        is_available:  formData.is_available !== false,
+        category:      formData.category || 'pizza',
+      });
     } else {
-      await updateDoc(doc(db, 'menu_items', editingId), formData);
+      const { id, ...updateData } = formData;
+      await updateDoc(doc(db, 'menu_items', editingId), updateData);
     }
     setEditingId(null);
   }

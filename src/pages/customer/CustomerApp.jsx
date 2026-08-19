@@ -259,10 +259,10 @@ function CartTab({ onOrderPlaced }) {
                   </p>
                 )}
                 {item.removed_ingredients?.length > 0 && (
-                  <p className="text-xs text-red-400 mt-1">❌ Senza: {item.removed_ingredients.join(', ')}</p>
+                  <p className="text-xs text-red-400 mt-1">❌ Senza: {item.removed_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                 )}
                 {item.added_ingredients?.length > 0 && (
-                  <p className="text-xs text-green-400">➕ Extra: {item.added_ingredients.join(', ')}</p>
+                  <p className="text-xs text-green-400">➕ Extra: {item.added_ingredients.map(id => ingredients[id]?.name_it || id).join(', ')}</p>
                 )}
                 {item.kebab_config && (
                   <div className="text-xs text-white/40 space-y-0.5 mt-1">

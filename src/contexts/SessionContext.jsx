@@ -1,7 +1,7 @@
 // src/contexts/SessionContext.jsx — Table session management
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-  doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp, collection
+  doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp, collection, runTransaction
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -45,23 +45,40 @@ export function SessionProvider({ tableId, children }) {
   }, [session?.id]);
 
   async function createNewSession(tblId, tblNumber) {
-    const sessionRef = doc(collection(db, 'sessions'));
-    const sessionData = {
-      id: sessionRef.id,
-      table_id: tblId,
-      table_number: tblNumber,
-      started_at: serverTimestamp(),
-      closed_at: null,
-      status: 'open',
-      total_amount: 0,
-      order_ids: [],
-    };
-    await setDoc(sessionRef, sessionData);
-    await updateDoc(doc(db, 'tables', tblId), {
-      status: 'occupied',
-      active_session_id: sessionRef.id,
-    });
-    setSession(sessionData);
+    try {
+      await runTransaction(db, async (transaction) => {
+        const tableRef = doc(db, 'tables', tblId);
+        const tableDoc = await transaction.get(tableRef);
+        if (!tableDoc.exists()) throw new Error("Table doesn't exist");
+        
+        // Prevent race condition: if someone else created it fractions of a second ago
+        if (tableDoc.data().active_session_id) {
+          return; // Let the onSnapshot handle the newly assigned session
+        }
+
+        const sessionRef = doc(collection(db, 'sessions'));
+        const sessionData = {
+          id: sessionRef.id,
+          table_id: tblId,
+          table_number: tblNumber,
+          started_at: serverTimestamp(),
+          closed_at: null,
+          status: 'open',
+          total_amount: 0,
+          order_ids: [],
+        };
+
+        transaction.set(sessionRef, sessionData);
+        transaction.update(tableRef, {
+          status: 'occupied',
+          active_session_id: sessionRef.id,
+        });
+
+        // Local state will be updated by the onSnapshot listener naturally
+      });
+    } catch (e) {
+      console.error("Error creating session transactionally", e);
+    }
   }
 
   async function requestBill() {

@@ -1,1 +1,23 @@
-node_modules
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Gradle
+.gradle_home/
+.gradle/
+build/
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+local.properties
+
+# Print server
+print-server/node_modules/

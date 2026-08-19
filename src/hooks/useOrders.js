@@ -1,7 +1,7 @@
 // src/hooks/useOrders.js — Real-time orders listener (used by KDS and Customer)
 import { useState, useEffect } from 'react';
 import {
-  collection, onSnapshot, query, where, orderBy,
+  collection, onSnapshot, query, where,
   doc, updateDoc, serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -28,8 +28,8 @@ export function useKitchenOrders() {
   return { orders, loading };
 }
 
-// Customer: listen to orders for a specific session
-export function useSessionOrders(sessionId) {
+// ── Shared implementation for session-based order listening ───────────────────
+function useSessionOrdersBase(sessionId) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,27 +51,15 @@ export function useSessionOrders(sessionId) {
   return { orders, loading };
 }
 
+// Customer: listen to orders for a specific session
+export function useSessionOrders(sessionId) {
+  return useSessionOrdersBase(sessionId);
+}
+
 // Cashier: listen to all orders for a session (including served)
+// Identical behavior to useSessionOrders — shared implementation
 export function useCashierSessionOrders(sessionId) {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!sessionId) { setLoading(false); return; }
-    const q = query(
-      collection(db, 'orders'),
-      where('session_id', '==', sessionId)
-    );
-    const unsub = onSnapshot(q, (snap) => {
-      let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      docs.sort((a, b) => (a.created_at?.toMillis?.() || 0) - (b.created_at?.toMillis?.() || 0));
-      setOrders(docs);
-      setLoading(false);
-    }, err => { console.error(err); setLoading(false); });
-    return () => unsub();
-  }, [sessionId]);
-
-  return { orders, loading };
+  return useSessionOrdersBase(sessionId);
 }
 
 // Update order status (used by KDS)

@@ -39,7 +39,7 @@ export function CartProvider({ children }) {
   const cartTotal = cart.items.reduce((sum, item) => sum + item.total_price * item.quantity, 0);
   const cartCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Submit cart as an order to Firestore
+  // Submit cart as a dine-in order to Firestore
   async function submitOrder(sessionId, tableId, tableNumber) {
     if (cart.items.length === 0) return null;
 
@@ -51,6 +51,7 @@ export function CartProvider({ children }) {
       session_id: sessionId,
       table_id: tableId,
       table_number: tableNumber,
+      type: 'dine_in',
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
       status: 'pending',
@@ -61,7 +62,6 @@ export function CartProvider({ children }) {
 
     await setDoc(orderRef, orderData);
 
-    // Update session total and order list
     await updateDoc(doc(db, 'sessions', sessionId), {
       total_amount: increment(subtotal),
       order_ids: au(orderRef.id),
@@ -71,8 +71,45 @@ export function CartProvider({ children }) {
     return orderRef.id;
   }
 
+  // Submit cart as a takeaway order to Firestore
+  async function submitTakeawayOrder(sessionId, customerName, phone) {
+    if (cart.items.length === 0) return null;
+
+    const { arrayUnion: au } = await import('firebase/firestore');
+    const orderRef = doc(collection(db, 'orders'));
+    const subtotal = cartTotal;
+    const orderData = {
+      id:            orderRef.id,
+      session_id:    sessionId,
+      table_id:      null,
+      table_number:  null,
+      type:          'takeaway',
+      customer_name: customerName,
+      phone:         phone || null,
+      created_at:    serverTimestamp(),
+      updated_at:    serverTimestamp(),
+      status:        'pending',
+      items:         cart.items,
+      subtotal,
+      notes:         '',
+    };
+
+    await setDoc(orderRef, orderData);
+
+    await updateDoc(doc(db, 'sessions', sessionId), {
+      total_amount: increment(subtotal),
+      order_ids:    au(orderRef.id),
+    }).catch(() => {});
+
+    clearCart();
+    return orderRef.id;
+  }
+
   return (
-    <CartContext.Provider value={{ cart, addItem, removeItem, updateQty, clearCart, cartTotal, cartCount, submitOrder }}>
+    <CartContext.Provider value={{
+      cart, addItem, removeItem, updateQty, clearCart,
+      cartTotal, cartCount, submitOrder, submitTakeawayOrder
+    }}>
       {children}
     </CartContext.Provider>
   );

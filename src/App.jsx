@@ -4,6 +4,7 @@ import { CustomerApp }       from './pages/customer/CustomerApp';
 import { KDSPage }           from './pages/kitchen/KDSPage';
 import { CashierDashboard }  from './pages/cashier/CashierDashboard';
 import { ProtectedRoute }    from './components/ProtectedRoute';
+import { AuthProvider }      from './contexts/AuthContext';
 
 function HomePage() {
   return (
@@ -72,14 +73,16 @@ function HomePage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/"               element={<HomePage />} />
-        <Route path="/table/:tableId" element={<CustomerApp />} />
-        <Route path="/kitchen"        element={<ProtectedRoute><KDSPage /></ProtectedRoute>} />
-        <Route path="/cashier"        element={<ProtectedRoute><CashierDashboard /></ProtectedRoute>} />
-        <Route path="*"               element={<HomePage />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/"               element={<HomePage />} />
+          <Route path="/table/:tableId" element={<CustomerApp />} />
+          <Route path="/kitchen"        element={<ProtectedRoute><KDSPage /></ProtectedRoute>} />
+          <Route path="/cashier"        element={<ProtectedRoute><CashierDashboard /></ProtectedRoute>} />
+          <Route path="*"               element={<HomePage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

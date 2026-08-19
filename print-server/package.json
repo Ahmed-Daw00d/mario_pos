@@ -1,0 +1,19 @@
+{
+  "name": "pos-print-server",
+  "version": "1.0.0",
+  "description": "Standalone thermal printer server for Pizzaria da Mario POS",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pngjs": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
