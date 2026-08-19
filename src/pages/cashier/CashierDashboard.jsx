@@ -13,6 +13,8 @@ import { LoadingScreen }          from '../../components/ui/SharedUI';
 import { PrinterSettingsModal }   from '../../components/PrinterSettingsModal';
 import { TakeawayModal }          from '../../components/TakeawayModal';
 import { TakeawayOrderBuilder }   from '../../components/TakeawayOrderBuilder';
+import { usePresence, usePresenceListener, usePingListener } from '../../hooks/usePresence';
+import { useOrderLock }           from '../../hooks/useOrderLock';
 import { printCanvas }            from '../../utils/printerHelper';
 import {
   doc, updateDoc, serverTimestamp
@@ -22,7 +24,7 @@ import { db } from '../../firebase';
 // ─────────────────────────────────────────────
 // Table Map Card
 // ─────────────────────────────────────────────
-function TableCard({ table, onClick, isSelected }) {
+function TableCard({ table, onClick, isSelected, isCustomerActive }) {
   const statusConfig = {
     available:       { label: 'Libero',   cls: 'table-available', dot: 'bg-brand-green' },
     occupied:        { label: 'Occupato', cls: 'table-occupied',  dot: 'bg-brand-red animate-pulse' },
@@ -35,6 +37,16 @@ function TableCard({ table, onClick, isSelected }) {
       className={`relative rounded-2xl border-2 p-4 transition-all duration-200 hover:scale-105 active:scale-95 text-center
         ${cfg.cls} ${isSelected ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background' : ''}`}>
       <div className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
+      
+      {isCustomerActive && (
+        <div className="absolute top-2 left-2 flex items-center justify-center" title="Cliente connesso al menu">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+        </div>
+      )}
+
       <p className="text-3xl font-black text-foreground">{table.table_number}</p>
       <p className="text-xs opacity-60 mt-1">{table.seats} posti</p>
       <p className={`text-xs font-semibold mt-1
@@ -99,9 +111,25 @@ function PaymentMethodModal({ onSelect, onCancel, total }) {
 // ─────────────────────────────────────────────
 // Bill Modal
 // ─────────────────────────────────────────────
-function BillModal({ table, onClose }) {
+function BillModal({ table, onClose, user }) {
   const { orders, loading }       = useCashierSessionOrders(table.active_session_id);
   const [closing, setClosing]     = useState(false);
+  
+  // RTDB Lock
+  const { lockedBy, acquireLock, releaseLock } = useOrderLock(table.active_session_id || 'dummy', user?.email || 'Cassiere');
+  const [lockAcquired, setLockAcquired] = useState(false);
+
+  useEffect(() => {
+    if (table.active_session_id) {
+      acquireLock().then(success => {
+        if (success) setLockAcquired(true);
+      });
+    }
+    return () => {
+      releaseLock();
+    };
+  }, [table.active_session_id]);
+
   const [closed, setClosed]       = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const printReceiptRef           = useRef(null);
@@ -166,6 +194,20 @@ function BillModal({ table, onClose }) {
         <div className="w-16 h-16 rounded-full bg-brand-green/20 flex items-center justify-center text-3xl mx-auto">✅</div>
         <h3 className="text-xl font-bold text-foreground">Tavolo {table.table_number} chiuso</h3>
         <p className="opacity-60 italic">Tavolo chiuso con successo</p>
+      </div>
+    </div>
+  );
+
+  if (lockedBy && !lockAcquired) return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.8)' }}>
+      <div className="bg-card rounded-3xl p-10 text-center space-y-4 border border-border">
+        <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-3xl mx-auto">🔒</div>
+        <h3 className="text-xl font-bold text-foreground">In uso da {lockedBy}</h3>
+        <p className="opacity-60 italic text-sm max-w-[200px] mx-auto">
+          Un altro cassiere sta già gestendo il conto di questo tavolo.
+        </p>
+        <button onClick={onClose} className="btn-ghost mt-4">Chiudi</button>
       </div>
     </div>
   );
@@ -463,6 +505,29 @@ export function CashierDashboard() {
   const [showTakeaway, setShowTakeaway]   = useState(false);
   const [takeawaySession, setTakeawaySession] = useState(null);
 
+  // RTDB Presence
+  usePresence('presence/cashier');
+  const kdsData = usePresenceListener('presence/kds');
+  const activeTables = usePresenceListener('presence/tables') || {};
+  const isKdsOnline = kdsData?.isOnline;
+
+  // Ping Listener
+  usePingListener('cashier', () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1200;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch {}
+    alert("🛎️ Il KDS (Cucina) ti sta chiamando!");
+  });
+
   if (loading) return <LoadingScreen message="Caricamento dashboard..." />;
 
   const tabs = [
@@ -493,9 +558,14 @@ export function CashierDashboard() {
             <span className="text-3xl">💰</span>
             <div>
               <h1 className="text-xl font-bold text-foreground">Cassa</h1>
-              <p className="text-xs opacity-60">
-                {isAdmin ? '👑 Admin' : '👤 Cassiere'} — {user?.email}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs opacity-60">
+                  {isAdmin ? '👑 Admin' : '👤 Cassiere'} — {user?.email}
+                </p>
+                <div className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${isKdsOnline ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                  KDS: {isKdsOnline ? 'ONLINE' : 'OFFLINE'}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -557,6 +627,7 @@ export function CashierDashboard() {
               {tables.map(table => (
                 <TableCard key={table.id} table={table}
                   isSelected={selectedTable?.id === table.id}
+                  isCustomerActive={activeTables[table.id]?.isOnline}
                   onClick={() => {
                     if (table.status !== 'available') setSelectedTable(table);
                   }}
@@ -590,7 +661,7 @@ export function CashierDashboard() {
 
       {/* Bill Modal */}
       {selectedTable && selectedTable.status !== 'available' && (
-        <BillModal table={selectedTable} onClose={() => setSelectedTable(null)} />
+        <BillModal table={selectedTable} onClose={() => setSelectedTable(null)} user={user} />
       )}
 
       {/* Takeaway creation modal */}

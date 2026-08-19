@@ -4,6 +4,7 @@ import {
   doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp, collection, runTransaction
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { usePresence } from '../hooks/usePresence';
 
 const SessionContext = createContext(null);
 
@@ -11,6 +12,9 @@ export function SessionProvider({ tableId, children }) {
   const [session, setSession]       = useState(null);
   const [tableData, setTableData]   = useState(null);
   const [loading, setLoading]       = useState(true);
+
+  // Mark table as online if someone is viewing this page
+  usePresence(tableId ? `presence/tables/${tableId}` : null);
 
   // Listen to table document in real-time
   useEffect(() => {

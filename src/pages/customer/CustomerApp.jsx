@@ -206,6 +206,7 @@ function OrdersTab() {
 function CartTab({ onOrderPlaced }) {
   const { cart, removeItem, updateQty, cartTotal, submitOrder } = useCart();
   const { session, tableData } = useSession();
+  const { ingredients } = useMenu();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useKitchenOrders, updateOrderStatus } from '../../hooks/useOrders';
 import { useMenu } from '../../hooks/useMenu';
+import { usePresence, usePresenceListener, sendPing } from '../../hooks/usePresence';
 import { StatusBadge } from '../../components/ui/SharedUI';
 import { ORDER_STATUS } from '../../data/menuData';
 import { ChevronRight, Clock, Bell, Printer, ShoppingBag, LogOut } from 'lucide-react';
@@ -190,13 +191,20 @@ function OrderCard({ order, onStatusChange, onPrint }) {
 
 // ─── KDS Page ─────────────────────────────────────────────────────────────────
 export function KDSPage() {
-  const { orders, loading }   = useKitchenOrders();
-  const { ingredients } = useMenu(); // Load ingredients to map IDs to localized names
+  const { ingredients, loading: menuLoading } = useMenu(); // Load ingredients to map IDs to localized names
+  const { orders, loading: ordersLoading } = useKitchenOrders();
   const { logout }            = useAuth();
   const [filter, setFilter]   = useState('all');
   const [autoPrint, setAutoPrint] = useState(true);
   const [printingOrder, setPrintingOrder] = useState(null);
   const seenOrderIds = useRef(new Set());
+
+  // RTDB Presence
+  usePresence('presence/kds');
+  const cashierData = usePresenceListener('presence/cashier');
+  const isCashierOnline = cashierData?.isOnline;
+
+  const loading = menuLoading || ordersLoading;
 
   // ── Print handler ──────────────────────────────────────────────────────────
   const sendToPrinter = async (order) => {
@@ -286,6 +294,15 @@ export function KDSPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <button 
+              onClick={() => sendPing('cashier')}
+              title="Chiama Cassa"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors border-white/10 hover:bg-white/5 active:bg-white/10"
+            >
+              <Bell size={14} className="text-yellow-400" />
+              <span>Cassa</span>
+              <div className={`w-2 h-2 rounded-full ${isCashierOnline ? 'bg-green-500' : 'bg-red-500'}`} title={isCashierOnline ? 'Online' : 'Offline'} />
+            </button>
             <button onClick={() => setAutoPrint(!autoPrint)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors
                 ${autoPrint
