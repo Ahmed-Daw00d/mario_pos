@@ -45,7 +45,7 @@ function useElapsedTime(createdAt) {
 }
 
 // ─── Order Card ───────────────────────────────────────────────────────────────
-function OrderCard({ order, onStatusChange, onPrint }) {
+function OrderCard({ order, onStatusChange, onPrint, ingredients }) {
   const elapsed    = useElapsedTime(order.created_at);
   const cfg        = ORDER_STATUS[order.status];
   const isUrgent   = order.status === 'pending' && elapsed.includes('m') && parseInt(elapsed) > 10;
@@ -358,6 +358,7 @@ export function KDSPage() {
               <OrderCard key={order.id} order={order}
                 onStatusChange={(id, status) => updateOrderStatus(id, status)}
                 onPrint={(o) => sendToPrinter(o)}
+                ingredients={ingredients}
               />
             ))}
           </div>
