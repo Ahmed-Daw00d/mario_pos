@@ -305,15 +305,15 @@ export function KDSPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <span className="text-3xl">🔥</span>
             <div>
               <h1 className="text-xl font-bold text-foreground">Cucina</h1>
               <p className="text-xs opacity-40">Kitchen Display System</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-end">
             <button 
               onClick={() => sendPing('cashier')}
               title="Chiama Cassa"

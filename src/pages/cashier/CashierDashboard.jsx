@@ -555,14 +555,15 @@ export function CashierDashboard() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <span className="text-3xl">💰</span>
             <div>
               <h1 className="text-xl font-bold text-foreground">Cassa</h1>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="text-xs opacity-60">
-                  {isAdmin ? '👑 Admin' : '👤 Cassiere'} — {user?.email}
+                  {isAdmin ? '👑 Admin' : '👤 Cassiere'}
+                  <span className="hidden sm:inline"> — {user?.email}</span>
                 </p>
                 <div className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${isKdsOnline ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                   KDS: {isKdsOnline ? 'ONLINE' : 'OFFLINE'}
@@ -571,7 +572,7 @@ export function CashierDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto justify-end">
             {/* Takeaway button */}
             <button
               onClick={() => setShowTakeaway(true)}

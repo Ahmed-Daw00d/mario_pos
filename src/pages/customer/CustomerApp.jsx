@@ -393,17 +393,17 @@ function CustomerAppInner() {
     <div className="h-screen bg-background flex flex-col max-w-md mx-auto relative overflow-hidden shadow-2xl">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="font-display italic font-bold text-xl text-foreground">
+        <div className="px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="font-display italic font-bold text-lg sm:text-xl text-foreground truncate">
               🍕 <span className="text-brand-gold">Pizzaria da</span> Mario
             </h1>
             <p className="text-xs opacity-60">Pizza & Kebab</p>
-            <p className="text-[10px] opacity-40">Via Aldo Moro 164, 00010 Gallicano nel Lazio (RM)</p>
+            <p className="text-[10px] opacity-40 truncate">Via Aldo Moro 164, 00010 Gallicano nel Lazio (RM)</p>
           </div>
-          <div className="text-right">
+          <div className="text-right flex-shrink-0">
             <p className="text-xs opacity-30">Tavolo</p>
-            <p className="text-3xl font-black text-foreground leading-none">{tableData?.table_number || '—'}</p>
+            <p className="text-2xl sm:text-3xl font-black text-foreground leading-none">{tableData?.table_number || '—'}</p>
           </div>
         </div>
       </header>
