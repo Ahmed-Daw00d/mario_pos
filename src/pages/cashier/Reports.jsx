@@ -68,15 +68,16 @@ export function Reports() {
   useEffect(() => { fetchData(date); }, [date]);
 
   // ─── Compute stats ───────────────────────────────────────────────────────────
-  const totalRevenue = sessions.reduce((s, se) => s + (se.total_amount || 0), 0);
-  const cashTotal    = sessions
-    .filter(s => s.payment_method === 'cash')
-    .reduce((s, se) => s + (se.total_amount || 0), 0);
-  const cardTotal    = sessions
-    .filter(s => s.payment_method === 'card')
-    .reduce((s, se) => s + (se.total_amount || 0), 0);
+  const totalRevenue  = sessions.reduce((s, se) => s + (se.total_amount || 0), 0);
+  const cashTotal     = sessions.filter(s => s.payment_method === 'cash').reduce((s, se) => s + (se.total_amount || 0), 0);
+  const cardTotal     = sessions.filter(s => s.payment_method === 'card').reduce((s, se) => s + (se.total_amount || 0), 0);
   const takeawayCount = sessions.filter(s => s.type === 'takeaway').length;
   const dineInCount   = sessions.filter(s => s.type !== 'takeaway').length;
+  const avgTicket     = sessions.length > 0 ? totalRevenue / sessions.length : 0;
+
+  // Revenue by type (from session type)
+  const takeawayRevenue = sessions.filter(s => s.type === 'takeaway').reduce((s, se) => s + (se.total_amount || 0), 0);
+  const dineInRevenue   = sessions.filter(s => s.type !== 'takeaway').reduce((s, se) => s + (se.total_amount || 0), 0);
 
   const isToday = date === new Date().toISOString().split('T')[0];
 
@@ -171,12 +172,47 @@ export function Reports() {
             />
             <StatCard
               icon={ShoppingBag}
-              label="Asporto"
-              value={takeawayCount}
-              color={{ border: 'border-orange-500/30', bg: 'bg-orange-500/10', text: 'text-orange-400' }}
-              sub={`${dineInCount} tavoli`}
+              label="Scontrino Medio"
+              value={`€${avgTicket.toFixed(2)}`}
+              color={{ border: 'border-purple-500/30', bg: 'bg-purple-500/10', text: 'text-purple-400' }}
+              sub={`${takeawayCount} asporto · ${dineInCount} tavoli`}
             />
           </div>
+
+          {/* Revenue split chart: dine-in vs takeaway */}
+          {totalRevenue > 0 && (
+            <div className="card p-4 space-y-3">
+              <p className="text-xs opacity-40 font-semibold uppercase tracking-wide">
+                📊 Entrate: Sala vs Asporto
+              </p>
+              <div className="flex rounded-full overflow-hidden h-4">
+                {dineInRevenue > 0 && (
+                  <div className="bg-brand-red h-full transition-all flex items-center justify-center text-[10px] text-white font-bold"
+                    style={{ width: `${(dineInRevenue / totalRevenue) * 100}%` }}
+                    title={`Sala: €${dineInRevenue.toFixed(2)}`}>
+                    {dineInRevenue / totalRevenue > 0.2 ? `${((dineInRevenue/totalRevenue)*100).toFixed(0)}%` : ''}
+                  </div>
+                )}
+                {takeawayRevenue > 0 && (
+                  <div className="bg-orange-500 h-full transition-all flex items-center justify-center text-[10px] text-white font-bold"
+                    style={{ width: `${(takeawayRevenue / totalRevenue) * 100}%` }}
+                    title={`Asporto: €${takeawayRevenue.toFixed(2)}`}>
+                    {takeawayRevenue / totalRevenue > 0.2 ? `${((takeawayRevenue/totalRevenue)*100).toFixed(0)}%` : ''}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-4 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />
+                  <span className="opacity-50">Sala €{dineInRevenue.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                  <span className="opacity-50">Asporto €{takeawayRevenue.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Payment breakdown bar */}
           {totalRevenue > 0 && (

@@ -33,7 +33,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg-main: #1A1A2E;
       --text-main: #ffffff;
       --bg-card: #16213E;
@@ -61,6 +61,54 @@
       
       --shadow-color: rgba(0, 0, 0, 0.5);
     }
+  }
+
+  /* Manual dark mode override (via data-theme attribute) */
+  :root[data-theme="dark"] {
+    --bg-main: #1A1A2E;
+    --text-main: #ffffff;
+    --bg-card: #16213E;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --brand-red: #C8102E;
+    --brand-red-hover: #b91c1c;
+    --brand-green: #008C45;
+    --brand-green-hover: #15803d;
+    --brand-gold: #F4D03F;
+    --brand-gold-hover: #facc15;
+    --brand-dark: #1A1A2E;
+    --brand-card: #16213E;
+    --brand-navy: #0F3460;
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --input-text: #ffffff;
+    --input-placeholder: rgba(255, 255, 255, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Manual light mode override */
+  :root[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --brand-red: #C8102E;
+    --brand-red-hover: #b91c1c;
+    --brand-green: #008C45;
+    --brand-green-hover: #15803d;
+    --brand-gold: #F4D03F;
+    --brand-gold-hover: #facc15;
+    --brand-dark: #1A1A2E;
+    --brand-card: #ffffff;
+    --brand-navy: #0F3460;
+    --input-bg: #f1f5f9;
+    --input-border: #cbd5e1;
+    --input-text: #0f172a;
+    --input-placeholder: #94a3b8;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(203, 213, 225, 0.5);
+    --shadow-color: rgba(0, 0, 0, 0.1);
   }
 
   * {

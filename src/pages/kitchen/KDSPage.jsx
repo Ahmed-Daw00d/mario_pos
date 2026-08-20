@@ -6,10 +6,25 @@ import { useMenu } from '../../hooks/useMenu';
 import { usePresence, usePresenceListener, sendPing } from '../../hooks/usePresence';
 import { StatusBadge } from '../../components/ui/SharedUI';
 import { ORDER_STATUS } from '../../data/menuData';
-import { ChevronRight, Clock, Bell, Printer, ShoppingBag, LogOut } from 'lucide-react';
+import { ChevronRight, Clock, Bell, Printer, ShoppingBag, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { printCanvas } from '../../utils/printerHelper';
+import { useTheme } from '../../hooks/useTheme';
 import html2canvas from 'html2canvas';
+
+// ─── Theme Toggle ─────────────────────────────────────────────────────────────
+function ThemeToggleBtn() {
+  const { isDark, toggleTheme } = useTheme();
+  return (
+    <button onClick={toggleTheme}
+      className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+      title={isDark ? 'Modalità chiara' : 'Modalità scura'}>
+      {isDark
+        ? <Sun size={18} className="text-brand-gold" />
+        : <Moon size={18} className="opacity-50 hover:opacity-100" />}
+    </button>
+  );
+}
 
 const STATUS_COLORS = {
   pending:        'border-amber-500/50   bg-amber-500/8',
@@ -242,18 +257,23 @@ export function KDSPage() {
     if (newOrders.length > 0) {
       newOrders.forEach(o => seenOrderIds.current.add(o.id));
 
-      // Beep
+      // Double-beep sound notification
       try {
         const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.5);
+        const playBeep = (startTime, freq) => {
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.4, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+          osc.start(startTime);
+          osc.stop(startTime + 0.25);
+        };
+        playBeep(ctx.currentTime,       880);
+        playBeep(ctx.currentTime + 0.3, 1100);
       } catch {}
 
       if (autoPrint) {
@@ -319,6 +339,7 @@ export function KDSPage() {
             <button onClick={logout} className="p-2 rounded-xl hover:bg-black/10 dark:hover:bg-white/10 transition-colors" title="Logout">
               <LogOut size={18} className="opacity-40" />
             </button>
+            <ThemeToggleBtn />
           </div>
         </div>
 

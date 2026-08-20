@@ -1,7 +1,7 @@
 // src/contexts/SessionContext.jsx — Table session management
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-  doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp, collection, runTransaction
+  doc, setDoc, updateDoc, onSnapshot, serverTimestamp, collection, runTransaction, increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { usePresence } from '../hooks/usePresence';
@@ -25,28 +25,25 @@ export function SessionProvider({ tableId, children }) {
       setTableData(table);
 
       if (table.active_session_id) {
-        // Listen to active session
-        const sessionSnap = await getDoc(doc(db, 'sessions', table.active_session_id));
-        if (sessionSnap.exists()) {
-          setSession({ id: sessionSnap.id, ...sessionSnap.data() });
-        }
+        // Session already exists — listener will pick it up via the second useEffect
+        setLoading(false);
       } else {
-        // No session — create one
+        // No session — create one (transactionally)
         await createNewSession(tableId, table.table_number);
+        setLoading(false);
       }
-      setLoading(false);
     });
     return () => unsub();
   }, [tableId]);
 
-  // Also keep session in real-time
+  // Listen to the active session in real-time (separate listener — no getDoc inside snapshot)
   useEffect(() => {
-    if (!session?.id) return;
-    const unsub = onSnapshot(doc(db, 'sessions', session.id), (snap) => {
+    if (!tableData?.active_session_id) return;
+    const unsub = onSnapshot(doc(db, 'sessions', tableData.active_session_id), (snap) => {
       if (snap.exists()) setSession({ id: snap.id, ...snap.data() });
     });
     return () => unsub();
-  }, [session?.id]);
+  }, [tableData?.active_session_id]);
 
   async function createNewSession(tblId, tblNumber) {
     try {

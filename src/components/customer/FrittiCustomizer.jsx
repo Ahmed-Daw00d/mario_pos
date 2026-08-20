@@ -13,13 +13,15 @@ export function FrittiCustomizer({ item, onClose }) {
   const { addItem } = useCart();
   const [selectedSauces, setSelectedSauces] = useState([]);
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState('');
 
   const toggleSauce = (id) => {
     setSelectedSauces(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const handleAddToCart = () => {
-    let notes = selectedSauces.length > 0 ? `Salse: ${selectedSauces.map(s => SAUCES.find(x => x.id === s)?.name_it).join(', ')}` : '';
+    const saucesNote = selectedSauces.length > 0 ? `Salse: ${selectedSauces.map(s => SAUCES.find(x => x.id === s)?.name_it).join(', ')}` : '';
+    const fullNotes  = [saucesNote, notes].filter(Boolean).join(' — ');
     addItem({
       item_id: item.id,
       item_name: item.name_it,
@@ -30,7 +32,7 @@ export function FrittiCustomizer({ item, onClose }) {
       unit_price: item.price,
       total_price: item.price,
       kebab_config: null,
-      notes,
+      notes: fullNotes,
     });
     onClose();
   };
@@ -62,6 +64,12 @@ export function FrittiCustomizer({ item, onClose }) {
                 {sauce.name_it}
               </button>
             ))}
+          </div>
+          <div>
+            <label className="text-sm text-white/60 mb-1.5 block">Note (opzionale)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="Istruzioni speciali per il cuoco..."
+              className="input-field resize-none h-16 text-sm" />
           </div>
         </div>
 

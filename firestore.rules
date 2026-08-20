@@ -32,7 +32,7 @@ service cloud.firestore {
     match /tables/{tableId} {
       allow read:   if true;
       allow create: if isAdmin();
-      allow update: if isAuthenticated() || request.auth == null; // customers update via session open
+      allow update: if isAuthenticated(); // customers opening sessions are still authenticated
       allow delete: if isAdmin();
     }
 

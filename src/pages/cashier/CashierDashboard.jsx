@@ -1,7 +1,8 @@
 // src/pages/cashier/CashierDashboard.jsx
 // Full cashier + admin dashboard: table map, bills, inventory, QR, takeaway, reports
 import { useState, useRef, useEffect } from 'react';
-import { QrCode, X, Printer, Check, ShoppingBag, LogOut, Settings } from 'lucide-react';
+import { QrCode, X, Printer, Check, ShoppingBag, LogOut, Settings, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
 import html2canvas from 'html2canvas';
 import { useTables }              from '../../hooks/useTables';
 import { useCashierSessionOrders } from '../../hooks/useOrders';
@@ -500,6 +501,7 @@ function SettingsTab() {
 export function CashierDashboard() {
   const { tables, loading }     = useTables();
   const { isAdmin, user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [activeTab, setActiveTab]         = useState('tables');
   const [selectedTable, setSelectedTable] = useState(null);
   const [showTakeaway, setShowTakeaway]   = useState(false);
@@ -596,6 +598,16 @@ export function CashierDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              title={isDark ? 'Modalità chiara' : 'Modalità scura'}>
+              {isDark
+                ? <Sun size={18} className="text-brand-gold" />
+                : <Moon size={18} className="opacity-60 hover:opacity-100" />}
+            </button>
 
             {/* Logout */}
             <button
