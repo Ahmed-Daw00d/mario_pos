@@ -26,18 +26,6 @@ export default defineConfig(({ command }) => ({
 
   build: {
     // Raise the warning threshold (Firebase is inherently large)
-    chunkSizeWarningLimit: 600,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Split Firebase into separate chunks for better caching
-          'firebase-core': ['firebase/app', 'firebase/auth'],
-          'firebase-firestore': ['firebase/firestore'],
-          'firebase-rtdb': ['firebase/database'],
-          // React ecosystem in its own chunk
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-        },
-      },
-    },
+    chunkSizeWarningLimit: 800,
   },
 }));

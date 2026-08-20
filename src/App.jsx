@@ -1,10 +1,57 @@
 // src/App.jsx — Italian primary language homepage and routing
+import { Component } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { CustomerApp }       from './pages/customer/CustomerApp';
 import { KDSPage }           from './pages/kitchen/KDSPage';
 import { CashierDashboard }  from './pages/cashier/CashierDashboard';
 import { ProtectedRoute }    from './components/ProtectedRoute';
 import { AuthProvider }      from './contexts/AuthContext';
+
+// ─── Global Error Boundary ────────────────────────────────────────────────────
+// Catches any React render crash so we NEVER see a blank screen
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('App crash caught by ErrorBoundary:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: '#0a0a0a', color: '#fff', padding: '32px', textAlign: 'center', gap: '16px'
+        }}>
+          <div style={{ fontSize: '64px' }}>💥</div>
+          <h2 style={{ fontSize: '22px', fontWeight: 'bold' }}>Errore — Pagina non disponibile</h2>
+          <p style={{ opacity: 0.5, fontSize: '14px', maxWidth: '400px' }}>
+            {this.state.error?.message || 'Errore sconosciuto'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '16px', padding: '12px 28px', borderRadius: '12px',
+              background: '#c0392b', color: '#fff', fontWeight: 'bold',
+              border: 'none', cursor: 'pointer', fontSize: '15px'
+            }}
+          >
+            🔄 Ricarica la Pagina
+          </button>
+          <p style={{ opacity: 0.3, fontSize: '11px', marginTop: '4px' }}>
+            Controlla la console del browser per i dettagli
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function HomePage() {
   return (
@@ -73,16 +120,18 @@ function HomePage() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/"               element={<HomePage />} />
-          <Route path="/table/:tableId" element={<CustomerApp />} />
-          <Route path="/kitchen"        element={<ProtectedRoute><KDSPage /></ProtectedRoute>} />
-          <Route path="/cashier"        element={<ProtectedRoute><CashierDashboard /></ProtectedRoute>} />
-          <Route path="*"               element={<HomePage />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/"               element={<HomePage />} />
+            <Route path="/table/:tableId" element={<ErrorBoundary><CustomerApp /></ErrorBoundary>} />
+            <Route path="/kitchen"        element={<ErrorBoundary><ProtectedRoute><KDSPage /></ProtectedRoute></ErrorBoundary>} />
+            <Route path="/cashier"        element={<ErrorBoundary><ProtectedRoute><CashierDashboard /></ProtectedRoute></ErrorBoundary>} />
+            <Route path="*"               element={<HomePage />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
